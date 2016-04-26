@@ -31,8 +31,9 @@ Quick Start
 
     INSTALLED_APPS = (
         ...
-        'genes',
         'organisms',
+        'genes',
+
     )
 
 
