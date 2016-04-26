@@ -1,3 +1,4 @@
+from django.db.models.functions import Coalesce
 from genes.models import Gene, CrossRef, CrossRefDB
 
 
@@ -36,16 +37,19 @@ def translate_genes(id_list=None, from_id=None, to_id=None, organism=None):
     elif (from_id == 'Standard name'):
         from_ids = gene_objects_manager.filter(
             standard_name__in=ids).values_list('standard_name', 'id')
-    # TODO: Rene, why does this use the same query? Isn't Symbol defined as
-    # some sort of function of standard and systematic?
     elif (from_id == 'Symbol'):
-        from_ids = gene_objects_manager.filter(
-            standard_name__in=ids).values_list('standard_name', 'id')
+        # If standard_name exists, symbol will be standard_name; otherwise
+        # symbol will be systematic_name.
+        from_ids = gene_objects_manager.annotate(
+            symbol=Coalesce('standard_name', 'systematic_name')).filter(
+                symbol__in=ids).values_list('symbol', 'id')
     else:  # a crossreference db?
         xrdb = CrossRefDB.objects.get(name=from_id)
         from_ids = CrossRef.objects.filter(crossrefdb=xrdb).values_list(
             'xrid', 'gene__id')
-    from_id_map = {}  # from to gene__id (FIXME: from what to gene__id?)
+
+    # Dictionary that maps from type ID passed by user to gene__id.
+    from_id_map = {}
     gene_ids = []
     for item in from_ids:
         from_id_map[item[0]] = item[1]
@@ -63,8 +67,12 @@ def translate_genes(id_list=None, from_id=None, to_id=None, organism=None):
         to_ids = Gene.objects.filter(id__in=gene_ids).values_list(
             'id', 'standard_name')
     elif (to_id == 'Symbol'):
-        to_ids = Gene.objects.filter(id__in=gene_ids).values_list(
-            'id', 'systematic_name')
+        # If standard_name exists, symbol will be standard_name; otherwise
+        # symbol will be systematic_name.
+        to_ids = Gene.objects.annotate(
+            symbol=Coalesce('standard_name', 'systematic_name')).filter(
+                id__in=gene_ids).values_list('id', 'symbol')
+
     else:  # A crossreference db?
         xrdb = CrossRefDB.objects.get(name=to_id)
         to_ids = CrossRef.objects.filter(crossrefdb=xrdb).values_list(
