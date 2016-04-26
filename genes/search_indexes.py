@@ -26,15 +26,15 @@ class GeneIndex(indexes.SearchIndex, indexes.Indexable):
                 Max('weight'))['weight__max']
             cache_weights[obj.organism.slug] = (min_weight, max_weight)
 
-        # Boost by at most 10% for genes that are widely referred to.
-        # This helps to solve the duplicate mapping problem. See:
+        # Boost by at most 10% for genes that are widely referred to.  This
+        # helps to solve the duplicate mapping problem. See:
         # https://django-haystack.readthedocs.org/en/latest/boost.html
-        # as well as code in the loading of gene_info files to estimate a
+        # as well as management/commands/genes_load_geneinfo.py to estimate a
         # weight.
         try:
             data['boost'] = 0.1 * (obj.weight - min_weight) / (
                 max_weight - min_weight) + 1
-        # On the first load, the max and min weights are zero
+        # On the first load, the max and min weights are zero.
         except ZeroDivisionError:
             data['boost'] = 1
 
