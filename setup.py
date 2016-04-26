@@ -19,7 +19,7 @@ setup(
     author='Greene Lab',
     author_email='team@greenelab.com',
     install_requires=[
-        'django',
+        'django>=1.8',
         'django-organisms',
         'django-haystack',
         'django-fixtureless',
