@@ -213,6 +213,14 @@ class Command(BaseCommand):
                                           gene=gene_object)
                         xr_obj.save()
 
+            # Update "obsolete" attribute for entrez records that are in the
+            # database but not in input file.
+            for id in entrez_in_db:
+                if id not in entrez_seen:
+                    gene_object = Gene.objects.get(entrezid=id, organism=org)
+                    if not gene_object.obsolete:
+                        gene_object.obsolete = True
+                        gene_object.save()
 
             logger.info("%s entrez identifiers existed in the database and "
                         "were found in the new gene_info file",
@@ -224,8 +232,8 @@ class Command(BaseCommand):
                         "in the new gene_info file",
                         entrez_created)
             if org_matches < 10:
-                sys.stderr.write('Less than ten matches were encountered for '
-                                 'this organism.  Check the organism ID.')
+                logger.error('Less than ten matches were encountered for '
+                             'this organism.  Check the organism ID.')
                 sys.exit(1)
         else:
             logger.error('Couldn\'t load geneinfo %s for org %s.',
