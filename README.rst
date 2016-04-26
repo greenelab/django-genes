@@ -43,7 +43,7 @@ Quick Start
 Search Indexes and Data Template
 --------------------------------
 
-The script ``search_indexes.py`` can be used by **django haystack**
+The module ``search_indexes.py`` can be used by **django haystack**
 (https://github.com/django-haystack/django-haystack) to search genes.
 It includes the Gene fields that should be included in the search index, and how
 they should be weighted. The ``text`` field refers to a document that is built
@@ -70,13 +70,13 @@ sub-directory to Populate the Database:
   * The name of the database
   * The URL for that database, with the string '_REPL_' added at the end of the URL
 
-  For example, this command adds Ensembl as cross-reference databases:
+  For example, this command adds Ensembl as a cross-reference database:
 
   .. code-block:: shell
 
     python manage.py genes_add_xrdb --name=Ensembl --URL=http://www.ensembl.org/Gene/Summary?g=_REPL_
 
-  And this command adds MIM as cross-reference databases:
+  And this command adds MIM as a cross-reference database:
 
   .. code-block:: shell
 
