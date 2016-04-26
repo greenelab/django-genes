@@ -6,40 +6,35 @@ from organisms.models import Organism
 
 # Regular expressions to be matched in the methods of 'Gene'.
 nonalpha = re.compile(r'[^a-zA-Z0-9]')
-nonalpha_space = re.compile(r'[^a-zA-Z0-9\ ]')
 num = re.compile(r'[0-9]')
 
 
 class Gene(models.Model):
     """
-    The class 'Gene' extends the Model class in Django (see
-    organisms/models.py), and serves as a Django model constructor, which will
-    create a table for Genes in the database. For more information, see:
-    https://docs.djangoproject.com/en/dev/topics/db/models/
+    The class 'Gene' extends the Model class in Django. For more information,
+    see: https://docs.djangoproject.com/en/dev/topics/db/models/
 
     Genes will be added from an online database like 'Entrez', using the Django
     management commands (see management/commands/genes_load_geneinfo.py).
     """
     entrezid = models.IntegerField(null=True, db_index=True, unique=True)
 
-    # Used for organisms like yeast
+    # Used for organisms like yeast.
     systematic_name = models.CharField(max_length=32, db_index=True)
 
-    # If standard_name exists, gene symbol will be standard_name; otherwise,
-    # gene symbol will be systematic_name.
     standard_name = models.CharField(max_length=32, null=True, db_index=True)
 
-    # Description/full name of gene
+    # Description/full name of gene.
     description = models.TextField()
 
     # "organism" field contains the primary key of whichever organism
-    # instance the gene belongs to. For more info, see:
-    # https://docs.djangoproject.com/en/1.5/ref/models/fields/#django.db.models.ForeignKey
+    # instance the gene belongs to.  For more info, see:
+    # https://docs.djangoproject.com/en/dev/ref/models/fields/#django.db.models.ForeignKey
     organism = models.ForeignKey(Organism, null=False)
 
-    # "aliases" stores a space-separated list of aliases, helps whoosh search.
-    # Before this change, aliases were stored as separate database table.
+    # "aliases" stores a space-separated list of aliases.
     aliases = models.TextField()
+
     obsolete = models.BooleanField(default=False)
 
     # Weight used for search results, needed now that we allow genes with
@@ -49,15 +44,9 @@ class Gene(models.Model):
     # __unicode__ in django, explained at:
     # https://docs.djangoproject.com/en/dev/ref/models/instances/#unicode
     def __unicode__(self):
-        return self.symbol
-
-    def _get_symbol(self):
         if self.standard_name:
             return self.standard_name
-        else:
-            return self.systematic_name
-
-    symbol = property(_get_symbol)
+        return self.systematic_name
 
     def wall_of_name(self):
         '''
