@@ -17,12 +17,15 @@ class TranslateTestCase(TestCase):
         xrdb1.save()
         xrdb2 = CrossRefDB(name="XRDB2", url="http://www.example.com/2")
         xrdb2.save()
+
+        # g1 and g2 have both standard and systematic names.
         g1 = Gene(entrezid=1, systematic_name="g1", standard_name="G1",
                   description="asdf", organism=org, aliases="gee1 GEE1")
         g1.save()
         g2 = Gene(entrezid=2, systematic_name="g2", standard_name="G2",
                   description="asdf", organism=org, aliases="gee2 GEE2")
         g2.save()
+
         xref1 = CrossRef(crossrefdb=xrdb1, gene=g1, xrid="XRID1")
         xref1.save()
         xref2 = CrossRef(crossrefdb=xrdb2, gene=g2, xrid="XRID1")
@@ -51,11 +54,25 @@ class TranslateTestCase(TestCase):
                   description="asdf", organism=org3, aliases="gee5 GEE5")
         g5.save()
 
+        # g101 has standard name, but no systematic name.
+        g101 = Gene(entrezid=101, standard_name="std_101", organism=org2)
+        g101.save()
+
+        # g102 has systematic name, but no standard name.
+        g102 = Gene(entrezid=102, systematic_name="sys_102", organism=org2)
+        g102.save()
+
+        # g103 has neither standard name nor systematic name.
+        g103 = Gene(entrezid=103, organism=org2)
+        g103.save()
+
     def test_translate_symbol_entrez_diff_organisms(self):
         """
         translate_genes() should be able to differentiate between different
         organism genes when passed identical symbols.
         """
+        # This test also confirmed that when both standard name and systematic
+        # name are available, the sysmbol will be standard name.
         translation = translate_genes(id_list=['ACDC'],
                                       from_id="Symbol", to_id="Entrez",
                                       organism="Mus computurus")
@@ -133,6 +150,48 @@ class TranslateTestCase(TestCase):
         self.assertEqual(translation,
                          {1: ['G1', ], 2: ['G2', ], 'not_found': [3]})
 
+    def test_translate_symbol_entrez(self):
+        """
+        Test translation from symbol to entrez when either standard name or
+        systematic name is null.
+        """
+        # Test the gene that has standard name.
+        translation = translate_genes(id_list=['std_101'],
+                                      from_id="Symbol", to_id="Entrez",
+                                      organism="Mus computurus")
+        self.assertEqual(translation, {'std_101': [101], 'not_found': []})
+        # Test the gene that does NOT have standard name.
+        translation = translate_genes(id_list=['sys_102'],
+                                      from_id="Symbol", to_id="Entrez",
+                                      organism="Mus computurus")
+        self.assertEqual(translation, {'sys_102': [102], 'not_found': []})
+        # Test the gene that has neither standard name nor systematic name.
+        translation = translate_genes(id_list=[''],
+                                      from_id="Symbol", to_id="Entrez",
+                                      organism="Mus computurus")
+        self.assertEqual(translation, {'': [103], 'not_found': []})
+
+    def test_translate_entrez_symbol(self):
+        """
+        Test translation from entrez to symbol when either standard name or
+        systematic name is null.
+        """
+        # Test the gene that has standard name.
+        translation = translate_genes(id_list=[101],
+                                      from_id="Entrez", to_id="Symbol",
+                                      organism="Mus computurus")
+        self.assertEqual(translation, {101: ['std_101'], 'not_found': []})
+        # Test the gene that does NOT have standard name.
+        translation = translate_genes(id_list=[102],
+                                      from_id="Entrez", to_id="Symbol",
+                                      organism="Mus computurus")
+        self.assertEqual(translation, {102: ['sys_102'], 'not_found': []})
+        # Test the gene that has neither standard name nor systematic name.
+        translation = translate_genes(id_list=[103],
+                                      from_id="Entrez", to_id="Symbol",
+                                      organism="Mus computurus")
+        self.assertEqual(translation, {103: [''], 'not_found': []})
+
     def tearDown(self):
         Organism.objects.all().delete()    # Remove Organism objects.
         Gene.objects.all().delete()        # Remove Gene objects.
@@ -141,7 +200,6 @@ class TranslateTestCase(TestCase):
 
 
 class CrossRefDBTestCase(TestCase):
-
     def test_saving_xrdb(self):
         """
         Test that this simple CrossRefDB creation raises no errors.
