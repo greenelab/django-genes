@@ -63,7 +63,7 @@ class Gene(models.Model):
         """
         Override save() method to make sure that standard_name and
         systematic_name won't be null or empty, or consist of only space
-        characters.
+        characters (such as space, tab, new line, etc).
         """
         empty_std_name = False
         if not self.standard_name or self.standard_name.isspace():
