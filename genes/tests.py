@@ -181,7 +181,8 @@ class TranslateTestCase(TestCase):
     def test_empty_standard_and_systematic_names(self):
         """
         Test that a ValueError exception will be raised when we try to create a
-        gene whose standard and systematic names are both empty or null.
+        gene whose standard and systematic names are both empty or null, or
+        ONLY consist of space characters (such as space, tab, new line, etc).
         """
         org = factory.create(Organism)
 
