@@ -62,7 +62,8 @@ Usage of Management Commands
 This app includes four management commands in ``management/commands/``
 sub-directory to populate the database:
 
-1. **genes_add_xrdb**
+1. genes_add_xrdb
+~~~~~~~~~~~~~~~~~
 
   This command adds cross-reference databases for genes. It **must** be called
   for every new cross-reference database to populate the gene and
@@ -84,7 +85,8 @@ sub-directory to populate the database:
     python manage.py genes_add_xrdb --name=MIM --URL=http://www.ncbi.nlm.nih.gov/omim/_REPL_
 
 
-2. **genes_load_geneinfo**
+2. genes_load_geneinfo
+~~~~~~~~~~~~~~~~~~~~~~
 
   This command parses gene info file(s) and saves the corresponding gene
   objects into the database. It takes 4 arguments:
@@ -112,7 +114,8 @@ sub-directory to populate the database:
     python manage.py genes_load_geneinfo --geneinfo_file=data/Homo_sapiens.gene_info --taxonomy_id=9606 --systematic_col=2 --symbol_col=2
 
 
-3. **genes_load_uniprot.py**
+3. genes_load_uniprot.py
+~~~~~~~~~~~~~~~~~~~~~~~~
 
   This command can be used to populate database with UniProtKB identifiers.
   It takes one argument:
@@ -132,7 +135,8 @@ sub-directory to populate the database:
     python manage.py genes_load_uniprot --uniprot_file=data/uniprot_entrez_ensembl.txt
 
 
-4. **genes_load_wb.py**
+4. genes_load_wb.py
+~~~~~~~~~~~~~~~~~~~
 
   This command can be used to populate database with WormBase identifiers.
   It takes 3 arguments:
