@@ -15,7 +15,7 @@ This package is registered as ``django-genes`` in PyPI and is pip installable:
 If any of the following dependency packages are not found on your system,
 ``pip`` will install them too:
 
-* ``django`` (Django web framework)
+* ``django 1.8 or later`` (Django web framework)
 
 * ``django-organisms`` (``Organisms`` model, which is required by ``Genes`` model)
 
