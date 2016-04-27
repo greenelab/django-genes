@@ -62,10 +62,6 @@ class TranslateTestCase(TestCase):
         g102 = Gene(entrezid=102, systematic_name="sys_102", organism=org2)
         g102.save()
 
-        # g103 has neither standard name nor systematic name.
-        g103 = Gene(entrezid=103, organism=org2)
-        g103.save()
-
     def test_translate_symbol_entrez_diff_organisms(self):
         """
         translate_genes() should be able to differentiate between different
@@ -165,11 +161,6 @@ class TranslateTestCase(TestCase):
                                       from_id="Symbol", to_id="Entrez",
                                       organism="Mus computurus")
         self.assertEqual(translation, {'sys_102': [102], 'not_found': []})
-        # Test the gene that has neither standard name nor systematic name.
-        translation = translate_genes(id_list=[''],
-                                      from_id="Symbol", to_id="Entrez",
-                                      organism="Mus computurus")
-        self.assertEqual(translation, {'': [103], 'not_found': []})
 
     def test_translate_entrez_symbol(self):
         """
@@ -186,11 +177,34 @@ class TranslateTestCase(TestCase):
                                       from_id="Entrez", to_id="Symbol",
                                       organism="Mus computurus")
         self.assertEqual(translation, {102: ['sys_102'], 'not_found': []})
-        # Test the gene that has neither standard name nor systematic name.
-        translation = translate_genes(id_list=[103],
-                                      from_id="Entrez", to_id="Symbol",
-                                      organism="Mus computurus")
-        self.assertEqual(translation, {103: [''], 'not_found': []})
+
+    def test_empty_standard_and_systematic_names(self):
+        """
+        Test that a ValueError exception will be raised when we try to create a
+        gene whose standard and systematic names are both empty or null.
+        """
+        org = factory.create(Organism)
+
+        # Neither standard_name nor systematic_name is set explicitly.
+        unnamed_gene = Gene(entrezid=999, organism=org)
+        self.assertRaises(ValueError, unnamed_gene.save)
+
+        # standard_name consists of only space characters.
+        # systematic_name is u'' here, because it is not set explicitly, and
+        # by default "null=False" for this field in the model.
+        unnamed_gene = Gene(entrezid=999, standard_name="\t  \n", organism=org)
+        self.assertRaises(ValueError, unnamed_gene.save)
+
+        # Both standard_name and systematic_name are empty strings.
+        unnamed_gene = Gene(entrezid=999, standard_name="", systematic_name="",
+                            organism=org)
+        self.assertRaises(ValueError, unnamed_gene.save)
+
+        # Both standard_name and systematic_name consist of space characters
+        # only.
+        unnamed_gene = Gene(entrezid=999, standard_name="  ",
+                            systematic_name="\t  \n ", organism=org)
+        self.assertRaises(ValueError, unnamed_gene.save)
 
     def tearDown(self):
         Organism.objects.all().delete()    # Remove Organism objects.
