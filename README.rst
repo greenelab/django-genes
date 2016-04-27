@@ -59,8 +59,8 @@ http://django-haystack.readthedocs.org/en/latest/tutorial.html#handling-data
 Usage of Management Commands
 ----------------------------
 
-This app includes four management commands in ``genes/management/commands/``
-sub-directory to Populate the Database:
+This app includes four management commands in ``management/commands/``
+sub-directory to populate the database:
 
 1. **genes_add_xrdb**
 
