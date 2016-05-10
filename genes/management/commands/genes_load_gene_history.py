@@ -7,16 +7,15 @@ database, the Gene record in database will be set as obsolete; if not, a new
 obsolete Gene record will be created in the database.
 
 The command accepts the following argument:
-(1) input gene history file.  An example can be found at:
-    ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
-(2) tax_id: Taxonomy ID assigned by NCBI to this organism.  Any other organisms
-    in input gene history file will be skipped.
-(3) tax_id_col (optional): column number of tax_id in input gene histyory file.
-    Default is 1.
-(4) discontinued_id_col (optional): column number of discontinued GeneID in
+(1) (Required) input gene history file.  A gzipped example file can be found
+    at: ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
+(2) (Required) tax_id: Taxonomy ID assigned by NCBI to this organism.  Any
+    other organisms in input file will be skipped.
+(3) (Optional) tax_id_col: column number of tax_id in input file. Default is 1.
+(4) (Optional) discontinued_id_col: column number of discontinued GeneID in
     input file.  Default is 3.
-(5) discontinued_symbol_col (optional): column number of gene's discontinued
-    symbol in input gene history file.  Default is 4.
+(5) (Optional) discontinued_symbol_col: column number of gene's discontinued
+    symbol in input file.  Default is 4.
 
 Note that column numbers in the last three arguments all start from 1, not 0.
 
