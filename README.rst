@@ -178,8 +178,8 @@ This app includes five management commands in ``management/commands/`` sub-direc
 
   * (Required) Input gene history file. A gzipped example file can be found at:
     ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
-  * (Required) tax_id: Taxonomy ID assigned by NCBI to this organism. Any other
-    organisms in input file will be skipped.
+  * (Required) tax_id: Taxonomy ID assigned by NCBI to a certain organism. Genes
+    of the other organisms in input file will be skipped.
   * (Optional) tax_id_col: column number of tax_id in input file. Default is 1.
   * (Optional) discontinued_id_col: column number of discontinued GeneID in
     input file. Default is 3.
