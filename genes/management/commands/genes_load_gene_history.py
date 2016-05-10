@@ -33,8 +33,8 @@ from genes.models import Gene
 
 
 class Command(BaseCommand):
-    help = ('Read input gene_history file and add or modify the genes that '
-            'match input taxonomy ID into the database as obsolete genes.')
+    help = ('Read input gene_history file and set or create obsolete Gene '
+            'records in the database.')
 
     def add_arguments(self, parser):
         parser.add_argument('gene_history_file', type=file)
