@@ -59,8 +59,7 @@ http://django-haystack.readthedocs.org/en/latest/tutorial.html#handling-data
 Usage of Management Commands
 ----------------------------
 
-This app includes four management commands in ``management/commands/``
-sub-directory to populate the database:
+This app includes five management commands in ``management/commands/`` sub-directory:
 
 1. genes_add_xrdb
 ~~~~~~~~~~~~~~~~~
@@ -89,12 +88,23 @@ sub-directory to populate the database:
 ~~~~~~~~~~~~~~~~~~~~~~
 
   This command parses gene info file(s) and saves the corresponding gene
-  objects into the database. It takes 4 arguments:
+  objects into the database. It takes 2 required arguments and 5 optional
+  arguments:
 
-  * Location of gene info file
-  * Taxonomy ID for organism for which genes are being populated
-  * Systematic column in gene info file
-  * Symbol column in gene info file
+  * (Required) Location of gene info file
+  * (Required) Taxonomy ID for organism for which genes are being populated
+  * (Optional) Systematic column in gene info file. If this argument is not
+    available, it will default to '3'.
+  * (Optional) Symbol column in gene info file. If this argument is not
+    available, it will default to '2'.
+  * (Optional) Alternative taxonomy id for some organisms (such as S. cerevisiae)
+  * (Optional) The column containing gene aliases. If a hyphen '-' or blank
+    space ' ' are passed, the symbol will be used. If this argument is not
+    available, it will default to '4'.
+  * (Optional) Name of cross-reference Database for which you want to use
+    organism systematic IDs as CrossReference IDs. This is useful for
+    Pseudomonas, for example, as systematic IDs are saved into PseudoCAP
+    cross-reference database.
 
   The following example shows how to download a gzipped human gene info file
   from NIH FTP server, and populate the database based on this file.
@@ -105,7 +115,7 @@ sub-directory to populate the database:
     mkdir data
 
     # Download a gzipped human gene info file into data directory:
-    wget -P data/ -N   ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
+    wget -P data/ -N ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
 
     # Unzip downloaded file:
     gunzip -c data/Homo_sapiens.gene_info.gz > data/Homo_sapiens.gene_info
@@ -130,7 +140,7 @@ sub-directory to populate the database:
 
   .. code-block:: shell
 
-    wget -P data/ -N  ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
+    wget -P data/ -N ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping.dat.gz
     zgrep -e "GeneID" -e "Ensembl" data/idmapping.dat.gz > data/uniprot_entrez_ensembl.txt
     python manage.py genes_load_uniprot --uniprot_file=data/uniprot_entrez_ensembl.txt
 
@@ -154,3 +164,43 @@ sub-directory to populate the database:
     # Find latest version of WormBase here:
     # http://www.wormbase.org/about/release_schedule#102--10-1
     python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
+
+
+5. genes_load_gene_history.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  This management command will read an input gene history file and find all genes
+  whose tax_id match input taxonomy ID. If the gene already exists in the database,
+  the Gene record in database will be set as obsolete; if not, a new
+  obsolete Gene record will be created in the database.
+
+  The command accepts 2 required arguments and 3 optional arguments:
+
+  * (Required) Input gene history file. A gzipped example file can be found at:
+    ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
+  * (Required) tax_id: Taxonomy ID assigned by NCBI to this organism. Any other
+    organisms in input file will be skipped.
+  * (Optional) tax_id_col: column number of tax_id in input file. Default is 1.
+  * (Optional) discontinued_id_col: column number of discontinued GeneID in
+    input file. Default is 3.
+  * (Optional) discontinued_symbol_col: column number of gene's discontinued
+    symbol in input file. Default is 4.
+
+  Note that column numbers in the last three arguments all start from 1, **not** 0.
+
+  For example, to add obsolete genes whose tax_id is 208964 in the file "gene_history",
+  we will use the command like this:
+
+  .. code-block:: shell
+
+    # Download file into your data directory:
+    cd /data_dir; wget ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
+
+    # Unzip the downloaded file into "gene_history"
+    gunzip gene_history.gz
+
+    # Run management command:
+    python manage.py /data_dir/gene_history 208964 --tax_id_col=1 --discontinued_id_col=3 --discontinued_symbol_col=4
+
+  (Here ``--tax_id_col=1 --discontinued_id_col=3 --discontinued_symbol_col=4`` are optional
+  because they are using default values.)
