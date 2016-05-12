@@ -1,31 +1,56 @@
 #!/usr/bin/env python
 
+# The docstring in this module is written in rst format so that it can be
+# collected by sphinx and pasted into django-genes/README.rst file.
+
 """
-This management command will read an input gene history file and find all genes
-whose tax_id match input taxonomy ID. If the gene already exists in the
-database, the Gene record in database will be set as obsolete; if not, a new
-obsolete Gene record will be created in the database.
+   This management command will read an input gene history file and
+   find all genes whose tax_id match input taxonomy ID. If the gene
+   already exists in the database, the Gene record in database will be
+   set as obsolete; if not, a new obsolete Gene record will be created
+   in the database.
 
-The command accepts the following argument:
-(1) (Required) input gene history file.  A gzipped example file can be found
-    at: ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
-(2) (Required) tax_id: Taxonomy ID assigned by NCBI to a certain organism.
-    Genes of the other organisms in input file will be skipped.
-(3) (Optional) tax_id_col: column number of tax_id in input file. Default is 1.
-(4) (Optional) discontinued_id_col: column number of discontinued GeneID in
-    input file.  Default is 3.
-(5) (Optional) discontinued_symbol_col: column number of gene's discontinued
-    symbol in input file.  Default is 4.
+   The command accepts 2 required arguments and 3 optional arguments:
 
-Note that column numbers in the last three arguments all start from 1, not 0.
+   * (Required) gene_history_file: Input gene history file. A gzipped
+     example file can be found at:
+     ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
 
-For example, to add obsolete genes whose tax_id is 208964 in the file
-"gene_history", we will use the command like this:
-    python manage.py /path_to_file/gene_history 208964 --tax_id_col=1 \
---discontinued_id_col=3 --discontinued_symbol_col=4
-(Here "--tax_id_col=1 --discontinued_id_col=3 --discontinued_symbol_col=4" are
-optional because they are using default values.)
+   * (Required) tax_id: Taxonomy ID assigned by NCBI to a certain
+     organism. Genes of the other organisms in input file will be
+     skipped.
+
+   * (Optional) tax_id_col: column number of tax_id in input file.
+     Default is 1.
+
+   * (Optional) discontinued_id_col: column number of discontinued
+     GeneID in input file. Default is 3.
+
+   * (Optional) discontinued_symbol_col: column number of gene's
+     discontinued symbol in input file. Default is 4.
+
+   Note that column numbers in the last three arguments all start from
+   1, **not** 0.
+
+   For example, to add obsolete genes whose tax_id is 208964 in the
+   file "gene_history", we will use the command like this:
+
+   ::
+
+      # Download file into your data directory:
+      cd /data_dir; wget ftp://ftp.ncbi.nih.gov/gene/DATA/gene_history.gz
+
+      # Unzip the downloaded file into "gene_history"
+      gunzip gene_history.gz
+
+      # Run management command:
+      python manage.py genes_load_gene_history /data_dir/gene_history 208964 --tax_id_col=1 --discontinued_id_col=3 --discontinued_symbol_col=4
+
+   (Here ``--tax_id_col=1 --discontinued_id_col=3
+   --discontinued_symbol_col=4`` are optional because they are using
+   default values.)
 """
+
 
 from django.core.management.base import BaseCommand, CommandError
 from organisms.models import Organism
@@ -57,14 +82,14 @@ class Command(BaseCommand):
                                 options['id_col'] - 1,
                                 options['symbol_col'] - 1)
             self.stdout.write(self.style.NOTICE(
-                'History gene data import succeeded'))
+                'Gene history data import succeeded'))
         except Exception as e:
             raise CommandError(
                 'Data import encountered an error: import_gene_history throws '
                 'an exception:\n%s' % e)
 
 
-def chk_col_numbers(line_num, col_num, tax_id_col, id_col, symbol_col):
+def chk_col_numbers(line_num, num_cols, tax_id_col, id_col, symbol_col):
     """
     Check that none of the input column numbers is out of range.
     (Instead of defining this function, we could depend on Python's built-in
@@ -74,11 +99,11 @@ def chk_col_numbers(line_num, col_num, tax_id_col, id_col, symbol_col):
     """
 
     bad_col = ''
-    if tax_id_col >= col_num:
+    if tax_id_col >= num_cols:
         bad_col = 'tax_id_col'
-    elif id_col >= col_num:
+    elif id_col >= num_cols:
         bad_col = 'discontinued_id_col'
-    elif symbol_col >= col_num:
+    elif symbol_col >= num_cols:
         bad_col = 'discontinued_symbol_col'
 
     if bad_col:
@@ -87,7 +112,7 @@ def chk_col_numbers(line_num, col_num, tax_id_col, id_col, symbol_col):
             (line_num, bad_col))
 
 
-def import_gene_history(file_handler, tax_id, tax_id_col, id_col, symbol_col):
+def import_gene_history(file_handle, tax_id, tax_id_col, id_col, symbol_col):
     """
     Read input gene history file into the database.
     Note that the arguments tax_id_col, id_col and symbol_col have been
@@ -109,7 +134,7 @@ def import_gene_history(file_handler, tax_id, tax_id_col, id_col, symbol_col):
         raise Exception(
             'tax_id_col, id_col and symbol_col must be positive integers')
 
-    for line_index, line in enumerate(file_handler):
+    for line_index, line in enumerate(file_handle):
         if line.startswith('#'):  # Skip comment lines.
             continue
 
