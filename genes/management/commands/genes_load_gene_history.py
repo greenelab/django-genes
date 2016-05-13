@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # The docstring in this module is written in rst format so that it can be
-# collected by sphinx and pasted into django-genes/README.rst file.
+# collected by sphinx and integrated into django-genes/README.rst file.
 
 """
    This management command will read an input gene history file and
@@ -44,7 +44,8 @@
       gunzip gene_history.gz
 
       # Run management command:
-      python manage.py genes_load_gene_history /data_dir/gene_history 208964 --tax_id_col=1 --discontinued_id_col=3 --discontinued_symbol_col=4
+      python manage.py genes_load_gene_history /data_dir/gene_history 208964 \
+--tax_id_col=1 --discontinued_id_col=3 --discontinued_symbol_col=4
 
    (Here ``--tax_id_col=1 --discontinued_id_col=3
    --discontinued_symbol_col=4`` are optional because they are using

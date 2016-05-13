@@ -1,3 +1,54 @@
+# The docstring in this module is written in rst format so that it can be
+# collected by sphinx and integrated into django-genes/README.rst file.
+
+"""
+   This command parses gene info file(s) and saves the corresponding
+   gene objects into the database. It takes 2 required arguments and 5
+   optional arguments:
+
+   * (Required) geneinfo_file: location of gene info file;
+
+   * (Required) taxonomy_id: taxonomy ID for organism for which genes are
+     being populated;
+
+   * (Optional) systematic_col: systematic column in gene info file.
+     Default is 3;
+
+   * (Optional) symbol_col: symbol column in gene info file. Default is 2;
+
+   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
+     (such as S. cerevisiae);
+
+   * (Optional) alias_col: the column containing gene aliases. If a hyphen
+     '-' or blank space ' ' is passed, symbol_col will be used. Default is 4.
+
+   * (Optional) put_systematic_in_xrdb: name of cross-reference Database
+     for which you want to use organism systematic IDs as CrossReference
+     IDs. This is useful for Pseudomonas, for example, as systematic IDs
+     are saved into PseudoCAP cross-reference database.
+
+   The following example shows how to download a gzipped human gene
+   info file from NIH FTP server, and populate the database based on
+   this file.
+
+   ::
+
+      # Create a temporary data directory:
+      mkdir data
+
+      # Download a gzipped human gene info file into data directory:
+      wget -P data/ -N \
+ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
+
+      # Unzip downloaded file:
+      gunzip -c data/Homo_sapiens.gene_info.gz > data/Homo_sapiens.gene_info
+
+      # Call genes_load_geneinfo to populate the database:
+      python manage.py genes_load_geneinfo \
+--geneinfo_file=data/Homo_sapiens.gene_info \
+--taxonomy_id=9606 --systematic_col=2 --symbol_col=2
+"""
+
 import logging
 import sys
 from optparse import make_option
@@ -17,17 +68,22 @@ class Command(BaseCommand):
                     "entrez"),
         make_option('--taxonomy_id', action='store', dest='taxonomy_id',
                     help="taxonomy_id assigned by NCBI to this organism"),
+
         make_option('--gi_tax_id', action='store', dest='gi_tax_id',
                     help="To work with cerivisiae's tax id change, use this, "
                     "otherwise we will just use tax_id"),
+
         make_option('--symbol_col', action='store', dest='symbol_col',
                     help="The column containing the symbol id.", default=2),
+
         make_option('--systematic_col', action='store', dest='systematic_col',
                     help="The column containing the systematic id.  If this is"
                     " '-' or blank, the symbol will be used", default=3),
+
         make_option('--alias_col', action='store', dest='alias_col',
                     help="The column containing gene aliases.  If this is '-'"
                     "or blank, the symbol will be used", default=4),
+
         make_option('--put_systematic_in_xrdb', action='store',
                     dest='systematic_xrdb',
                     help='Optional: Name of Cross-Reference Database for '

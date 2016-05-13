@@ -1,3 +1,33 @@
+# The docstring in this module is written in rst format so that it can be
+# collected by sphinx and integrated into django-genes/README.rst file.
+
+"""
+   This command adds cross-reference databases for genes. It **must**
+   be called for every new cross-reference database to populate the
+   gene and cross-reference objects in the database. It requires 2
+   arguments:
+
+   * name: the name of the database
+
+   * URL: the URL for that database, with the string '_REPL_' added at the
+     end of the URL
+
+   For example, this command adds Ensembl as a cross-reference
+   database:
+
+   ::
+
+      python manage.py genes_add_xrdb --name=Ensembl \
+--URL=http://www.ensembl.org/Gene/Summary?g=_REPL_
+
+   And this command adds MIM as a cross-reference database:
+
+   ::
+
+      python manage.py genes_add_xrdb --name=MIM \
+--URL=http://www.ncbi.nlm.nih.gov/omim/_REPL_
+"""
+
 import logging
 from optparse import make_option
 

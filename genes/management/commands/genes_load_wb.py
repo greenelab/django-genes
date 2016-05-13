@@ -1,3 +1,32 @@
+# The docstring in this module is written in rst format so that it can be
+# collected by sphinx and integrated into django-genes/README.rst file.
+
+"""
+   This command can be used to populate database with WormBase
+   identifiers. It takes 3 arguments:
+
+   * (Required) wb_url: URL of wormbase xrefs file;
+
+   * (Required) taxonomy_id: taxonomy ID assigned to this organism by
+     NCBI;
+
+   * (Optional) db_name: the name of the cross-reference database,
+     default is 'WormBase'.
+
+   As is expected, the WormBase cross-reference database should be
+   populated using the ``genes_add_xrdb`` command (see command #1)
+   before this command to populate the WormBase identifiers.
+   Here is an example:
+
+   ::
+
+      # Find latest version of WormBase here:
+      # http://www.wormbase.org/about/release_schedule#102--10-1
+      python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/\
+wormbase/releases/WS243/species/c_elegans/PRJNA13758/\
+c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
+"""
+
 import logging
 import urllib2
 import gzip

@@ -33,7 +33,7 @@ Quick Start
 ===========
 
 1. Add **'genes'** and **'organisms'** to your ``INSTALLED_APPS``
-   setting like this:
+   setting like this.
 
    ::
       INSTALLED_APPS = (
@@ -76,13 +76,13 @@ sub-directory:
 
    This command adds cross-reference databases for genes. It **must**
    be called for every new cross-reference database to populate the
-   gene and cross-reference objects in the database. It takes 2
+   gene and cross-reference objects in the database. It requires 2
    arguments:
 
-   * The name of the database
+   * name: the name of the database
 
-   * The URL for that database, with the string '_REPL_' added at the
-     end of the URL
+   * URL: the URL for that database, with the string '_REPL_' added at
+     the end of the URL
 
    For example, this command adds Ensembl as a cross-reference
    database:
@@ -107,28 +107,29 @@ sub-directory:
    gene objects into the database. It takes 2 required arguments and 5
    optional arguments:
 
-   * (Required) Location of gene info file
+   * (Required) geneinfo_file: location of gene info file;
 
-   * (Required) Taxonomy ID for organism for which genes are being
-     populated
+   * (Required) taxonomy_id: taxonomy ID for organism for which genes
+     are being populated;
 
-   * (Optional) Systematic column in gene info file. If this argument
-     is not available, it will default to '3'.
+   * (Optional) systematic_col: systematic column in gene info file.
+     Default is 3;
 
-   * (Optional) Symbol column in gene info file. If this argument is
-     not available, it will default to '2'.
+   * (Optional) symbol_col: symbol column in gene info file. Default
+     is 2;
 
-   * (Optional) Alternative taxonomy id for some organisms (such as S.
-     cerevisiae)
+   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
+     (such as S. cerevisiae);
 
-   * (Optional) The column containing gene aliases. If a hyphen '-' or
-     blank space ' ' are passed, the symbol will be used. If this
-     argument is not available, it will default to '4'.
+   * (Optional) alias_col: the column containing gene aliases. If a
+     hyphen '-' or blank space ' ' is passed, symbol_col will be used.
+     Default is 4.
 
-   * (Optional) Name of cross-reference Database for which you want to
-     use organism systematic IDs as CrossReference IDs. This is useful
-     for Pseudomonas, for example, as systematic IDs are saved into
-     PseudoCAP cross-reference database.
+   * (Optional) put_systematic_in_xrdb: name of cross-reference
+     Database for which you want to use organism systematic IDs as
+     CrossReference IDs. This is useful for Pseudomonas, for example,
+     as systematic IDs are saved into PseudoCAP cross-reference
+     database.
 
    The following example shows how to download a gzipped human gene
    info file from NIH FTP server, and populate the database based on
@@ -157,8 +158,8 @@ sub-directory:
    This command can be used to populate database with UniProtKB
    identifiers. It takes one argument:
 
-   * The location of a file mapping UniProtKB IDs to Entrez and
-     Ensembl IDs
+   * uniprot_file: location of a file mapping UniProtKB IDs to Entrez
+     and Ensembl IDs
 
    **Important:** Before calling this command, please make sure that
    both Ensembl and Entrez identifiers have been loaded into the
@@ -183,17 +184,18 @@ sub-directory:
    This command can be used to populate database with WormBase
    identifiers. It takes 3 arguments:
 
-   * The URL of wormbase xrefs file
+   * (Required) wb_url: URL of wormbase xrefs file;
 
-   * The name of the cross-reference database (which defaults to
-     'WormBase')
+   * (Required) taxonomy_id: taxonomy ID assigned to this organism by
+     NCBI;
 
-   * The Taxonomy ID assigned to this organism by NCBI
+   * (Optional) db_name: the name of the cross-reference database,
+     default is 'WormBase'.
 
    As is expected, the WormBase cross-reference database should be
    populated using the ``genes_add_xrdb`` command (see command #1)
-   before running this command to populate the WormBase identifiers.
-   Here is an example:
+   before this command to populate the WormBase identifiers. Here is
+   an example:
 
    ::
 
