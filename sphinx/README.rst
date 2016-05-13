@@ -35,13 +35,14 @@ Quick Start
 1. Add **'genes'** and **'organisms'** to your ``INSTALLED_APPS``
    setting like this:
 
+..
+
    ::
 
       INSTALLED_APPS = (
           ...
           'organisms',
           'genes',
-
       )
 
 

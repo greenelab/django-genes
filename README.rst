@@ -33,17 +33,19 @@ Quick Start
 ===========
 
 1. Add **'genes'** and **'organisms'** to your ``INSTALLED_APPS``
-   setting like this.
+   setting like this:
+
+..
 
    ::
+
       INSTALLED_APPS = (
           ...
           'organisms',
           'genes',
-
       )
 
-2. Run ``python manage.py migrate`` command to create ``genes`` and
+1. Run ``python manage.py migrate`` command to create ``genes`` and
    ``organisms`` models.
 
 
