@@ -9,9 +9,7 @@ Download and Install
 ====================
 
 This package is registered as ``django-genes`` in PyPI and is pip
-installable:
-
-::
+installable::
 
    pip install django-genes
 
@@ -33,11 +31,7 @@ Quick Start
 ===========
 
 1. Add **'genes'** and **'organisms'** to your ``INSTALLED_APPS``
-   setting like this:
-
-..
-
-   ::
+setting like this::
 
       INSTALLED_APPS = (
           ...
@@ -47,7 +41,7 @@ Quick Start
 
 
 2. Run ``python manage.py migrate`` command to create ``genes`` and
-   ``organisms`` models.
+``organisms`` models.
 
 
 Search Indexes and Data Template
