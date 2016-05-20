@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import FieldError
 from django.db import IntegrityError
+from django.core.management import call_command
 from fixtureless import Factory
 
 from organisms.models import Organism
@@ -236,3 +237,57 @@ class CrossRefDBTestCase(TestCase):
         """
         with self.assertRaises(FieldError):
             factory.create(CrossRefDB, {"name": ""})
+
+
+class LoadCrossRefsTestCase(TestCase):
+
+    def setUp(self):
+        xrdb1 = CrossRefDB.objects.create(
+            name="Ensembl", url="http://www.ensembl.org/Gene/Summary?g=_REPL_")
+
+        CrossRefDB.objects.create(
+            name="UniProtKB", url="http://www.uniprot.org/uniprot/_REPL_")
+
+        g1 = factory.create(Gene, {'entrezid': 50810})
+        g2 = factory.create(Gene)
+        g3 = factory.create(Gene)
+        g4 = factory.create(Gene)
+
+        factory.create(CrossRef, {'crossrefdb': xrdb1, 'gene': g1,
+                                  'xrid': 'ENSG00000166503'})
+        factory.create(CrossRef, {'crossrefdb': xrdb1, 'gene': g2,
+                                  'xrid': 'ENSG00000214575'})
+        factory.create(CrossRef, {'crossrefdb': xrdb1, 'gene': g3,
+                                  'xrid': 'ENSG00000170312'})
+        factory.create(CrossRef, {'crossrefdb': xrdb1, 'gene': g4,
+                                  'xrid': 'ENSG00000172053'})
+
+    def test_load_uniprot_mgmt_command(self):
+        """
+        Check that genes_load_uniprot management command loads UniProtKB
+        identifiers (using Entrez and Ensembl) and that it also saves those
+        relationships in the database.
+        """
+        call_command('genes_load_uniprot',
+                     uniprot='genes/test_files/test_uniprot_entrez_ensembl.txt')
+
+        uniprot1 = CrossRef.objects.get(xrid='A0A024R216')
+        self.assertEqual(uniprot1.gene.entrezid, 50810)
+        e1 = CrossRef.objects.filter(
+            crossrefdb__name='Ensembl').get(gene=uniprot1.gene)
+        self.assertEqual(e1.xrid, 'ENSG00000166503')
+
+        uniprot2 = CrossRef.objects.get(xrid='A0A024R214')
+        e2 = CrossRef.objects.filter(
+            crossrefdb__name='Ensembl').get(gene=uniprot2.gene)
+        self.assertEqual(e2.xrid, 'ENSG00000214575')
+
+        uniprot3 = CrossRef.objects.get(xrid='A0A024QZP7')
+        e3 = CrossRef.objects.filter(
+            crossrefdb__name='Ensembl').get(gene=uniprot3.gene)
+        self.assertEqual(e3.xrid, 'ENSG00000170312')
+
+        uniprot4 = CrossRef.objects.get(xrid='A0A0U1RQX9')
+        e4 = CrossRef.objects.filter(
+            crossrefdb__name='Ensembl').get(gene=uniprot4.gene)
+        self.assertEqual(e4.xrid, 'ENSG00000172053')
