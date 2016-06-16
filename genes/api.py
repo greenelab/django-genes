@@ -37,8 +37,18 @@ class GeneResource(ModelResource):
     def get_search(self, request, **kwargs):
         # This code uses Haystack to search for genes
         self.method_check(request, allowed=['get', 'post'])
-        self.is_authenticated(request)
         self.throttle_check(request)
+
+        GENE_RESULT_LIMIT = 15
+        if request.GET.get('gene_result_limit'):
+            try:
+                # Make sure the input is already an integer
+                # or can be coerced into one.
+                GENE_RESULT_LIMIT = int(
+                    request.GET.get('gene_result_limit'))
+            except ValueError:
+                # Keep the GENE_RESULT_LIMIT at 15
+                pass
 
         search_string = request.GET.get('query')
 
@@ -60,7 +70,7 @@ class GeneResource(ModelResource):
             if organism is not None:
                 sqs = sqs.filter(organism=organism)
             sqs = sqs.filter(content=search)
-            sqs = sqs.load_all()[:15]
+            sqs = sqs.load_all()[:GENE_RESULT_LIMIT]
             objects = []
 
             for result in sqs:
