@@ -46,6 +46,37 @@ setting like this:
 2. Run ``python manage.py migrate`` command to create ``genes`` and
 ``organisms`` models.
 
+3. **(Optional)** The following step is only needed if you have
+django-tastypie installed to create a REST API for your project and
+would like to have API endpoints for ``django-organisms`` and
+``django-genes``.
+
+Add the following to your project's ``urls.py`` file:
+
+::
+
+   # There are probably already other imports here, such as:
+   # from django.conf.urls import url, patterns, include
+
+   # If you have not already done so, import the tastypie API:
+   from tastypie.api import Api
+
+   # Import the API Resources for Organisms and Genes:
+   from organisms.api import OrganismResource
+   from genes.api import GeneResource
+
+   # If you have not already done so, initialize your API and
+   # add the Organism and Gene Resources to it
+   v0_api = Api()
+   v0_api.register(OrganismResource())
+   v0_api.register(GeneResource())
+
+   # In the urlpatterns, include the urls for this api:
+   urlpatterns = patterns('',
+       ...
+       (r'^api/', include(v0_api.urls))
+   )
+
 
 Search Indexes and Data Template
 ================================
