@@ -17,6 +17,7 @@ try:
 
 except ImportError:
     logger.info('Not using django-tastypie in genes/api.py file')
+    quit()
 
 GENE_RESULT_LIMIT = 15
 
