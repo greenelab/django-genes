@@ -1,13 +1,20 @@
 from haystack import indexes
 from django.db.models import Max, Min
+
 from genes.models import Gene
+
+try:
+    from celery_haystack.indexes import CelerySearchIndex as SearchIndex
+
+except ImportError:
+    from haystack.indexes import SearchIndex
 
 # Had to cache this. Without the cache, rebuilding the index would crush
 # the database.
 cache_weights = {}
 
 
-class GeneIndex(indexes.SearchIndex, indexes.Indexable):
+class GeneIndex(SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     organism = indexes.CharField(model_attr="organism__slug")
     obsolete = indexes.BooleanField(model_attr="obsolete")
