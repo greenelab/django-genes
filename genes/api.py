@@ -25,7 +25,7 @@ GENE_RESULT_LIMIT = 15
 class GeneResource(ModelResource):
     entrezid = fields.IntegerField(attribute='entrezid')
     pk = fields.IntegerField(attribute='id')
-    xrids = fields.ToManyField('CrossRefResource',
+    xrids = fields.ToManyField('genes.api.CrossRefResource',
                                'crossref_set', related_name='gene',
                                full=True)
 
