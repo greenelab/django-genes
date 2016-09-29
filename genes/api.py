@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from haystack.query import SearchQuerySet
 
-from genes.models import Gene
+from genes.models import Gene, CrossRefDB, CrossRef
 from genes.utils import translate_genes
 from organisms.api import OrganismResource
 
@@ -12,7 +12,7 @@ logger.addHandler(logging.NullHandler())
 
 try:
     from tastypie import fields
-    from tastypie.resources import ModelResource, ALL
+    from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
     from tastypie.utils import trailing_slash
 
 except ImportError:
@@ -25,7 +25,7 @@ GENE_RESULT_LIMIT = 15
 class GeneResource(ModelResource):
     entrezid = fields.IntegerField(attribute='entrezid')
     pk = fields.IntegerField(attribute='id')
-    xrids = fields.ToManyField('genesets.api.resources.CrossrefResource',
+    xrids = fields.ToManyField('genes.api.CrossrefResource',
                                'crossref_set', related_name='gene',
                                full=True)
 
@@ -114,3 +114,29 @@ class GeneResource(ModelResource):
                                           organism=organism)
 
         return self.create_response(request, return_ids_dict)
+
+
+class CrossRefDBResource(ModelResource):
+    name = fields.CharField(attribute='name')
+    url = fields.CharField(attribute='url')
+
+    class Meta:
+        queryset = CrossRefDB.objects.all()
+        allowed_methods = ['get']
+        filtering = {'name': ALL,
+                     'url': ALL}
+
+
+class CrossRefResource(ModelResource):
+    xrid = fields.CharField(attribute='xrid')
+    crossrefdb = fields.ToOneField(CrossRefDBResource, 'crossrefdb')
+    gene = fields.ToOneField(GeneResource, 'gene')
+    db_url = fields.CharField(attribute='specific_url')
+
+    class Meta:
+        queryset = CrossRef.objects.all()
+        allowed_methods = ['get']
+        filtering = {
+            'xrid': ALL,
+            'crossrefdb': ALL,
+            'gene': ALL_WITH_RELATIONS}
