@@ -63,6 +63,9 @@ class GeneResource(ModelResource):
                 # the top of the file
                 gene_result_limit = GENE_RESULT_LIMIT
 
+        else:
+            gene_result_limit = GENE_RESULT_LIMIT
+
         search_string = request.GET.get('query')
 
         organism_uri = request.GET.get('organism')
