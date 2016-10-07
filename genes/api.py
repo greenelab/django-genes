@@ -55,11 +55,13 @@ class GeneResource(ModelResource):
             try:
                 # Make sure the input is already an integer
                 # or can be coerced into one.
-                GENE_RESULT_LIMIT = int(
+                gene_result_limit = int(
                     request.GET.get('gene_result_limit'))
             except ValueError:
-                # Keep the GENE_RESULT_LIMIT at 15
-                pass
+                # Keep the gene_result_limit at whatever the
+                # GENE_RESULT_LIMIT setting is set to at
+                # the top of the file
+                gene_result_limit = GENE_RESULT_LIMIT
 
         search_string = request.GET.get('query')
 
@@ -82,7 +84,7 @@ class GeneResource(ModelResource):
             if organism is not None:
                 sqs = sqs.filter(organism=organism)
             sqs = sqs.filter(content=search)
-            sqs = sqs.load_all()[:GENE_RESULT_LIMIT]
+            sqs = sqs.load_all()[:gene_result_limit]
             objects = []
 
             for result in sqs:
