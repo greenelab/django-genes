@@ -18,7 +18,7 @@ class GeneIndex(SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     organism = indexes.CharField(model_attr="organism__slug")
     obsolete = indexes.BooleanField(model_attr="obsolete")
-    std_name = indexes.CharField(model_attr="standard_name")
+    std_name = indexes.CharField(model_attr="standard_name", null=True)
 
     def prepare(self, obj):
         data = super(GeneIndex, self).prepare(obj)

@@ -53,11 +53,19 @@ class Gene(models.Model):
         Appends identifiers for the different databases (such as Entrez id's)
         and returns them. Uses the CrossRef class below.
         '''
-        names = [self.standard_name, self.systematic_name]
+        names = []
+        if self.standard_name:
+            names.append(self.standard_name)
+        if self.systematic_name:
+            names.append(self.systematic_name)
         names.extend([xref.xrid for xref in self.crossref_set.all()])
         for i in range(len(names)):
             names[i] = re.sub(nonalpha, '', names[i])
-        return ' '.join(names) + ' ' + re.sub(num, '', self.standard_name)
+
+        ret = ' '.join(names)
+        if self.standard_name:
+            ret += ' ' + re.sub(num, '', self.standard_name)
+        return ret
 
     def save(self, *args, **kwargs):
         """
