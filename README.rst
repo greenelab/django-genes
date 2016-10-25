@@ -66,10 +66,14 @@ Add the following to your project's ``urls.py`` file:
    from genes.api import GeneResource
 
    # If you have not already done so, initialize your API and
-   # add the Organism and Gene Resources to it
+   # add the Organism and Gene Resources to it. You can also register
+   # the CrossRefResource and CrossRefDBResource if you want to have
+   # API endpoints for them as well.
    v0_api = Api()
    v0_api.register(OrganismResource())
    v0_api.register(GeneResource())
+   v0_api.register(CrossRefResource())
+   v0_api.register(CrossRefDBResource())
 
    # In the urlpatterns, include the urls for this api:
    urlpatterns = patterns('',
