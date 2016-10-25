@@ -62,10 +62,10 @@ class Gene(models.Model):
         for i in range(len(names)):
             names[i] = re.sub(nonalpha, '', names[i])
 
-        ret = ' '.join(names)
+        names_string = ' '.join(names)
         if self.standard_name:
-            ret += ' ' + re.sub(num, '', self.standard_name)
-        return ret
+            names_string += ' ' + re.sub(num, '', self.standard_name)
+        return names_string
 
     def save(self, *args, **kwargs):
         """
