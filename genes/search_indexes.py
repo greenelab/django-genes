@@ -20,6 +20,9 @@ class GeneIndex(SearchIndex, indexes.Indexable):
     obsolete = indexes.BooleanField(model_attr="obsolete")
     std_name = indexes.CharField(model_attr="standard_name")
 
+    # Autocomplete field:
+    std_name_auto = indexes.EdgeNgramField(model_attr='standard_name')
+
     def prepare(self, obj):
         data = super(GeneIndex, self).prepare(obj)
         # Had to cache these, otherwise too much CPU would be used on
