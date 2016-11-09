@@ -110,7 +110,7 @@ class GeneResource(ModelResource):
     def search_autocomplete(self, request, **kwargs):
         query = request.GET.get('query', '')
 
-        sqs = SearchQuerySet().autocomplete(std_name_auto=query)[:10]
+        sqs = SearchQuerySet().autocomplete(wall_of_name_auto=query)[:10]
 
         suggestions = []
         for result in sqs:
