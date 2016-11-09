@@ -109,8 +109,12 @@ class GeneResource(ModelResource):
 
     def search_autocomplete(self, request, **kwargs):
         query = request.GET.get('query', '')
+        limit = request.GET.get('limit', None)
 
-        sqs = SearchQuerySet().autocomplete(wall_of_name_auto=query)[:10]
+        sqs = SearchQuerySet().autocomplete(wall_of_name_auto=query)
+
+        if limit:
+            sqs = sqs[:limit]
 
         suggestions = []
         for result in sqs:
