@@ -109,16 +109,24 @@ class GeneResource(ModelResource):
 
     def search_autocomplete(self, request, **kwargs):
         query = request.GET.get('query', '')
-        sqs = SearchQuerySet().models(Gene).autocomplete(content_auto=query)[:5]
 
-        suggestions = [result.title for result in sqs]
+        sqs = SearchQuerySet().autocomplete(std_name_auto=query)[:5]
 
-        suggestions = sorted(suggestions,
-                             key=itemgetter("score", "length", "name"),
-                             reverse=False)
+        suggestions = []
+        for result in sqs:
+            gene = result.object
+            suggestions.append({'id': gene.id, 'score': (result.score * -1),
+                                'standard_name': gene.standard_name,
+                                'systematic_name': gene.systematic_name,
+                                'description': gene.description,
+                                'length': len(gene.standard_name)})
 
-        # Make sure you return a JSON object, not a bare list.
-        # Otherwise, you could be vulnerable to an XSS attack.
+        suggestions = sorted(
+            suggestions, key=itemgetter('score', 'length', 'standard_name'),
+            reverse=False)
+
+        # Return a JSON object instead of an array, as returning an array
+        # could make the information vulnerable to an XSS attack.
         response = {'results': suggestions}
 
         return self.create_response(request, response)
