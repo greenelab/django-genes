@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from haystack.query import SearchQuerySet
+from operator import itemgetter
 
 from genes.models import Gene, CrossRefDB, CrossRef
 from genes.utils import translate_genes
@@ -40,6 +41,10 @@ class GeneResource(ModelResource):
             url(r"^(?P<resource_name>%s)/search%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('get_search'), name="api_get_search"),
+            url(r"^(?P<resource_name>%s)/search_autocomplete%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('search_autocomplete'),
+                name="api_search_autocomplete"),
             url(r"^(?P<resource_name>%s)/xrid_translate%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('translate_gene_ids'),
@@ -101,6 +106,22 @@ class GeneResource(ModelResource):
 
         self.log_throttled_access(request)
         return self.create_response(request, genes)
+
+    def search_autocomplete(self, request, **kwargs):
+        query = request.GET.get('query', '')
+        sqs = SearchQuerySet().models(Gene).autocomplete(content_auto=query)[:5]
+
+        suggestions = [result.title for result in sqs]
+
+        suggestions = sorted(suggestions,
+                             key=itemgetter("score", "length", "name"),
+                             reverse=False)
+
+        # Make sure you return a JSON object, not a bare list.
+        # Otherwise, you could be vulnerable to an XSS attack.
+        response = {'results': suggestions}
+
+        return self.create_response(request, response)
 
     def translate_gene_ids(self, request, **kwargs):
         self.method_check(request, allowed=['post'])
