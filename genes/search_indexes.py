@@ -21,7 +21,7 @@ class GeneIndex(SearchIndex, indexes.Indexable):
     std_name = indexes.CharField(model_attr="standard_name", null=True)
 
     # Autocomplete field:
-    std_name_auto = indexes.EdgeNgramField(model_attr='standard_name')
+    wall_of_name_auto = indexes.EdgeNgramField(model_attr='wall_of_name')
 
     def prepare(self, obj):
         data = super(GeneIndex, self).prepare(obj)
