@@ -120,6 +120,7 @@ class GeneResource(ModelResource):
         for result in sqs:
             gene = result.object
             suggestions.append({'id': gene.id, 'score': (result.score * -1),
+                                'entrezid': gene.entrezid,
                                 'standard_name': gene.standard_name,
                                 'systematic_name': gene.systematic_name,
                                 'description': gene.description,
