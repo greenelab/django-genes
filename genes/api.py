@@ -41,10 +41,10 @@ class GeneResource(ModelResource):
             url(r"^(?P<resource_name>%s)/search%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('get_search'), name="api_get_search"),
-            url(r"^(?P<resource_name>%s)/search_autocomplete%s$" %
+            url(r"^(?P<resource_name>%s)/autocomplete%s$" %
                 (self._meta.resource_name, trailing_slash()),
-                self.wrap_view('search_autocomplete'),
-                name="api_search_autocomplete"),
+                self.wrap_view('autocomplete'),
+                name="api_autocomplete"),
             url(r"^(?P<resource_name>%s)/xrid_translate%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('translate_gene_ids'),
@@ -107,18 +107,27 @@ class GeneResource(ModelResource):
         self.log_throttled_access(request)
         return self.create_response(request, genes)
 
-    def search_autocomplete(self, request, **kwargs):
+    def autocomplete(self, request, **kwargs):
+        # Note: If the parameter in question (e.g. query, limit, etc.)
+        # is not sent as part of the request, the request.GET.get()
+        # method will set it to None unless a default is specified.
         query = request.GET.get('query', '')
-        limit = request.GET.get('limit', None)
+        limit = request.GET.get('limit')
+        organism_uri = request.GET.get('organism')
 
         sqs = SearchQuerySet().autocomplete(wall_of_name_auto=query)
 
-        if limit:
-            sqs = sqs[:limit]
+        if organism_uri:
+            organism = OrganismResource().get_via_uri(organism_uri,
+                                                      request)
+            sqs = sqs.filter(organism=organism)
 
         suggestions = []
         for result in sqs:
             gene = result.object
+
+            # We multiply the search score by -1 here so that the result
+            # sorting in the code below works.
             suggestions.append({'id': gene.id, 'score': (result.score * -1),
                                 'entrezid': gene.entrezid,
                                 'standard_name': gene.standard_name,
@@ -126,9 +135,29 @@ class GeneResource(ModelResource):
                                 'description': gene.description,
                                 'length': len(gene.standard_name)})
 
+        # Haystack already sorts the results by score (highest score first).
+        # However, we also want to break ties between genes with equal scores
+        # by sorting them by result length. This is so that genes that have
+        # less characters, aside from the ones typed in by the users, will be
+        # the first to show up (among genes with the same search score).
+        # Finally, we sort genes with the same score and same length by
+        # alphabetical order.
         suggestions = sorted(
-            suggestions, key=itemgetter('score', 'length', 'standard_name'),
-            reverse=False)
+            suggestions, key=itemgetter('score', 'length', 'standard_name'))
+
+        # This following bit makes sure we do not leave any results out if
+        # they have the same search score as the last result inside the
+        # 'limit' range.
+        if limit:
+            last_suggestion = suggestions[limit-1]
+            following_suggestion = suggestions[limit]
+
+            while last_suggestion['score'] == following_suggestion['score']:
+                limit += 1
+                last_suggestion = suggestions[limit-1]
+                following_suggestion = suggestions[limit]
+
+            suggestions = suggestions[:limit]
 
         # Return a JSON object instead of an array, as returning an array
         # could make the information vulnerable to an XSS attack.
