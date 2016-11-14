@@ -141,7 +141,8 @@ class GeneResource(ModelResource):
         # but as mentioned above, we also want to be able to sort by gene name
         # length, and also by standard_name alphabetical order. Unfortunately,
         # this is currently not possible in Haystack with an Elasticsearch
-        # backend, so we implement our own sorting.
+        # backend, so we implement our own sorting. See Haystack issue here:
+        # https://github.com/django-haystack/django-haystack/issues/1431
         suggestions = []
         for result in sqs:
             gene = result.object
