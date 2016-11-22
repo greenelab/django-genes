@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-genes',
-    version='0.8',
+    version='0.9',
     packages=find_packages(),
     include_package_data=True,
     license='LICENSE.txt',
@@ -20,7 +20,7 @@ setup(
     author_email='team@greenelab.com',
     install_requires=[
         'django>=1.8',
-        'django-organisms',
+        'django-organisms>=0.4',
         'django-haystack',
         'django-fixtureless',
     ],
