@@ -1,6 +1,5 @@
 from django.conf.urls import url
 from haystack.query import SearchQuerySet
-from operator import itemgetter
 
 from genes.models import Gene, CrossRefDB, CrossRef
 from genes.utils import translate_genes
@@ -123,43 +122,42 @@ class GeneResource(ModelResource):
             except ValueError:
                 limit = None
 
+        # We want to sort results by three fields: First by search score, then
+        # by standard_name length, and finally by standard_name alphabetical
+        # order. We sort by standard_name length because a long gene name and
+        # a short gene name can have the same score if they contain the n-gram.
+        # A user can always type more to get the long one, but they can't type
+        # less to get the short one. By returning the shortest first, we make
+        # sure that this choice is always available to the user, even if a
+        # limit is applied.
+        #
+        # *Note: We use SearchQuerySet's order_by() function to sort by these
+        # three fields, but this current implementation is Elasticsearch
+        # specific. (Elasticsearch uses '_score' while it is simply 'score' in
+        # Solr). At some point we might want to expand this to be compatible
+        # with other search engines, like Solr, Xapian and Whoosh.
+        # See Haystack issue here:
+        # https://github.com/django-haystack/django-haystack/issues/1431
         sqs = SearchQuerySet().models(Gene).autocomplete(
-            wall_of_name_auto=query)
+            wall_of_name_auto=query).order_by('-_score', 'std_name_length',
+                                              'wall_of_name_auto')
 
         if organism_uri:
             organism = OrganismResource().get_via_uri(organism_uri,
                                                       request)
             sqs = sqs.filter(organism=organism)
 
-        # A long gene name and a short gene name can have the same score if
-        # they contain the n-gram. A user can always type more to get the long
-        # one, but they can't type less to get the short one. By returning the
-        # shortest first, we make sure that this choice is always available to
-        # the user, even if a limit is applied.
-        #
-        # Haystack already sorts the results by score (highest score first),
-        # but as mentioned above, we also want to be able to sort by gene name
-        # length, and also by standard_name alphabetical order. Unfortunately,
-        # this is currently not possible in Haystack with an Elasticsearch
-        # backend, so we implement our own sorting. See Haystack issue here:
-        # https://github.com/django-haystack/django-haystack/issues/1431
         suggestions = []
-        for result in sqs:
-            gene = result.object
 
-            # We multiply the search score by -1 here so that the result
-            # sorting in the code below works.
-            suggestions.append({'id': gene.id, 'score': (result.score * -1),
+        # Get slice of sqs for 'limit' specified (or use full sqs if no limit
+        # was specified).
+        for result in sqs[:limit]:
+            gene = result.object
+            suggestions.append({'id': gene.id, 'score': result.score,
                                 'entrezid': gene.entrezid,
                                 'standard_name': gene.standard_name,
                                 'systematic_name': gene.systematic_name,
-                                'description': gene.description,
-                                'length': len(gene.standard_name)})
-
-        suggestions = sorted(
-            suggestions, key=itemgetter('score', 'length', 'standard_name'))
-
-        suggestions = suggestions[:limit]
+                                'description': gene.description})
 
         # Return a JSON object instead of an array, as returning an array
         # could make the information vulnerable to an XSS attack.
