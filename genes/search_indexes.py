@@ -19,9 +19,14 @@ class GeneIndex(SearchIndex, indexes.Indexable):
     organism = indexes.CharField(model_attr="organism__slug")
     obsolete = indexes.BooleanField(model_attr="obsolete")
     std_name = indexes.CharField(model_attr="standard_name", null=True)
+    std_name_length = indexes.IntegerField()
 
     # Autocomplete field:
     wall_of_name_auto = indexes.EdgeNgramField(model_attr='wall_of_name')
+
+    def prepare_std_name_length(self, obj):
+        std_name = self.prepared_data['std_name']
+        return len(std_name)
 
     def prepare(self, obj):
         data = super(GeneIndex, self).prepare(obj)
