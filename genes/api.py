@@ -122,9 +122,10 @@ class GeneResource(ModelResource):
             except ValueError:
                 limit = None
 
-        # We want to sort results by three fields: First by search score, then
-        # by standard_name length, and finally by standard_name alphabetical
-        # order. We sort by standard_name length because a long gene name and
+        # We want to sort results by three fields: First by search score,
+        # then by name length (standard_name if present, if not then
+        # systematic_name), and finally by this name's alphabetical order.
+        # We sort by gene name length because a long gene name and
         # a short gene name can have the same score if they contain the n-gram.
         # A user can always type more to get the long one, but they can't type
         # less to get the short one. By returning the shortest first, we make
@@ -139,7 +140,7 @@ class GeneResource(ModelResource):
         # See Haystack issue here:
         # https://github.com/django-haystack/django-haystack/issues/1431
         sqs = SearchQuerySet().models(Gene).autocomplete(
-            wall_of_name_auto=query).order_by('-_score', 'std_name_length',
+            wall_of_name_auto=query).order_by('-_score', 'name_length',
                                               'wall_of_name_auto')
 
         if organism_uri:
