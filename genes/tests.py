@@ -7,6 +7,7 @@ from fixtureless import Factory
 from organisms.models import Organism
 from genes.models import Gene, CrossRef, CrossRefDB
 from genes.utils import translate_genes
+from genes.search_indexes import GeneIndex
 
 factory = Factory()
 
@@ -213,6 +214,35 @@ class TranslateTestCase(TestCase):
         Gene.objects.all().delete()        # Remove Gene objects.
         CrossRef.objects.all().delete()    # Remove CrossRef objects.
         CrossRefDB.objects.all().delete()  # Remove CrossRefDB objects.
+
+
+class PrepareNameLengthTestCase(TestCase):
+    """
+    This TestCase prepares the prepare_name_length() method in
+    search_indexes.GeneIndex.
+    """
+    def setUp(self):
+
+        self.g1 = factory.create(Gene, {'standard_name': 'A1',
+                                        'systematic_name': 'a12'})
+        self.g2 = factory.create(Gene, {'standard_name': None,
+                                        'systematic_name': 'b12'})
+
+        self.gene_index = GeneIndex()
+
+    def test_std_and_sys_name_present(self):
+        """
+        Test that this raises no errors.
+        """
+        name_length = self.gene_index.prepare_name_length(self.g1)
+        self.assertEqual(name_length, 2)
+
+    def test_only_sys_name_present(self):
+        """
+        Test that this raises no errors.
+        """
+        name_length = self.gene_index.prepare_name_length(self.g2)
+        self.assertEqual(name_length, 3)
 
 
 class CrossRefDBTestCase(TestCase):
