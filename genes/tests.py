@@ -232,14 +232,14 @@ class PrepareNameLengthTestCase(TestCase):
 
     def test_std_and_sys_name_present(self):
         """
-        Test that this raises no errors.
+        Test that name_length is 2, the length of 'A1'.
         """
         name_length = self.gene_index.prepare_name_length(self.g1)
         self.assertEqual(name_length, 2)
 
     def test_only_sys_name_present(self):
         """
-        Test that this raises no errors.
+        Test that name_length is 3, the length of 'b12'.
         """
         name_length = self.gene_index.prepare_name_length(self.g2)
         self.assertEqual(name_length, 3)
