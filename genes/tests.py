@@ -1,8 +1,11 @@
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.core.exceptions import FieldError
 from django.db import IntegrityError
 from django.core.management import call_command
 from fixtureless import Factory
+
+from haystack.query import SearchQuerySet
 
 from organisms.models import Organism
 from genes.models import Gene, CrossRef, CrossRefDB
@@ -10,6 +13,18 @@ from genes.utils import translate_genes
 from genes.search_indexes import GeneIndex
 
 factory = Factory()
+
+
+# REQUIRES ELASTICSEARCH TO BE SETUP AS THE HAYSTACK PROVIDER.
+TEST_INDEX = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.'
+                  'ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'TIMEOUT': 60 * 10,
+        'INDEX_NAME': 'test_index',
+    },
+}
 
 
 class TranslateTestCase(TestCase):
@@ -243,6 +258,79 @@ class PrepareNameLengthTestCase(TestCase):
         """
         name_length = self.gene_index.prepare_name_length(self.g2)
         self.assertEqual(name_length, 3)
+
+
+# We use @override_settings here so that the tests use the TEST_INDEX
+# when building/rebuilding the search indexes, and not our real Database
+# search indexes.
+@override_settings(HAYSTACK_CONNECTIONS=TEST_INDEX)
+class BuildingGeneIndexTestCase(TestCase):
+    """
+    This TestCase tests the ability to build search indexes under certain
+    corner cases.
+    """
+    def test_factory_gene_creation(self):
+        """
+        Create a gene using the factory, without any specified fields.
+
+        Call command to build search index and then try to find the gene
+        using this search index.
+        """
+        gene = factory.create(Gene)
+
+        call_command('update_index', interactive=False, verbosity=0)
+        sqs = SearchQuerySet().models(Gene)
+        sqs = sqs.filter(content=gene.systematic_name).load_all()
+        self.assertEqual(sqs[0].object, gene)
+
+    def test_std_and_sys_name_present(self):
+        """
+        Create a gene using the factory, but specify both standard_
+        and systematic_ names.
+
+        Call command to build search index and then try to find the gene
+        using this search index.
+        """
+        gene = factory.create(Gene, {'standard_name': 'A1',
+                                     'systematic_name': 'a12'})
+
+        call_command('update_index', interactive=False, verbosity=0)
+        sqs = SearchQuerySet().models(Gene)
+        sqs = sqs.filter(content=gene.systematic_name).load_all()
+        self.assertEqual(sqs[0].object, gene)
+
+    def test_only_sys_name_present(self):
+        """
+        Create a gene using the factory, specify systematic_ name and
+        make standard_name explicitly None.
+
+        Call command to build search index and then try to find the gene
+        using this search index.
+
+        """
+        gene = factory.create(Gene, {'standard_name': None,
+                                     'systematic_name': 'b34'})
+
+        call_command('update_index', interactive=False, verbosity=0)
+        sqs = SearchQuerySet().models(Gene)
+        sqs = sqs.filter(content=gene.systematic_name).load_all()
+        self.assertEqual(sqs[0].object, gene)
+
+    def test_no_description(self):
+        """
+        Create a gene using the factory, specify description to be an
+        empty string.
+
+        Call command to build search index and then try to find the gene
+        using this search index.
+
+        """
+        gene = factory.create(Gene, {'description': ''})
+
+        call_command('update_index', interactive=False, verbosity=0)
+        sqs = SearchQuerySet().models(Gene)
+        sqs = sqs.filter(content=gene.systematic_name).load_all()
+        self.assertEqual(sqs[0].object, gene)
 
 
 class CrossRefDBTestCase(TestCase):
