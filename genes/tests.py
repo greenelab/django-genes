@@ -27,6 +27,77 @@ TEST_INDEX = {
 }
 
 
+class GeneDBConstraintsTestCase(TestCase):
+    """
+    Checks that new Genes can be created in the database under different
+    circumstances. Also checks that the exceptions we are looking for are
+    raised when the Genes that are trying to be created do not comply with
+    database constraints.
+    """
+
+    def test_std_and_sys_name_present(self):
+        """
+        Check that this throws no errors.
+        """
+        factory.create(Gene, {'standard_name': 'A1',
+                              'systematic_name': 'a12'})
+
+    def test_only_sys_name_present(self):
+        """
+        Check that this throws no errors.
+        """
+        factory.create(Gene, {'standard_name': None,
+                              'systematic_name': 'b34'})
+
+    def test_only_std_name_present(self):
+        """
+        Check that this throws an IntegrityError from the database when
+        trying to create a Gene with a null value for systematic_name.
+        """
+        with self.assertRaises(IntegrityError):
+            factory.create(Gene, {'standard_name': 'C5',
+                                  'systematic_name': None})
+
+    def test_both_names_absent(self):
+        """
+        Check that the Gene.save() method throws a ValueError when
+        trying to create a Gene with a null value for standard_name AND
+        systematic_name.
+        """
+        with self.assertRaises(ValueError):
+            factory.create(Gene, {'standard_name': None,
+                                  'systematic_name': None})
+
+    def test_only_sys_name_blank_space(self):
+        """
+        Check that the Gene.save() method throws a ValueError if there
+        is no standard_name and a systematic_name is passed but it is
+        a blank string.
+        """
+        with self.assertRaises(ValueError):
+            factory.create(Gene, {'standard_name': None,
+                                  'systematic_name': ' '})
+
+    def test_good_std_name_blank_sys_name(self):
+        """
+        Check that this throws no errors even though the systematic_name
+        passed is a blank string (as in the previous test), since a
+        non-blank standard_name is passed.
+        """
+        factory.create(Gene, {'standard_name': 'D7',
+                              'systematic_name': ' '})
+
+    def test_std_name_and_sys_name_both_blank_space(self):
+        """
+        Check that the Gene.save() method throws a ValueError if
+        both the standard_name and systematic_name are passed but are
+        blank strings.
+        """
+        with self.assertRaises(ValueError):
+            factory.create(Gene, {'standard_name': '  ',
+                                  'systematic_name': '  '})
+
+
 class TranslateTestCase(TestCase):
     def setUp(self):
         org = factory.create(Organism)
