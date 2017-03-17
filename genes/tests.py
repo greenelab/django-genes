@@ -436,6 +436,7 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
 
     def test_gene_get_search(self):
         """
+        Tests API gene search when searching with a GET request
         """
         response = self.client.get('/api/v1/gene/search/',
                                    data={'query': self.gene1.standard_name})
@@ -452,6 +453,7 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
 
     def test_gene_post_search(self):
         """
+        Tests API gene search when searching with a POST request
         """
         response = self.client.post('/api/v1/gene/search/',
                                     data={'query': self.gene2.standard_name})
