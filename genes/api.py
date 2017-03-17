@@ -55,12 +55,21 @@ class GeneResource(ModelResource):
         self.method_check(request, allowed=['get', 'post'])
         self.throttle_check(request)
 
-        if request.GET.get('gene_result_limit'):
+        if request.method == 'GET':
+            gene_result_limit = request.GET.get('gene_result_limit')
+            search_string = request.GET.get('query')
+            organism_uri = request.GET.get('organism')
+
+        elif request.method == 'POST':
+            gene_result_limit = request.POST.get('gene_result_limit')
+            search_string = request.POST.get('query')
+            organism_uri = request.POST.get('organism')
+
+        if gene_result_limit:
             try:
                 # Make sure the input is already an integer
                 # or can be coerced into one.
-                gene_result_limit = int(
-                    request.GET.get('gene_result_limit'))
+                gene_result_limit = int(gene_result_limit)
             except ValueError:
                 # Keep the gene_result_limit at whatever the
                 # GENE_RESULT_LIMIT setting is set to at
@@ -70,9 +79,6 @@ class GeneResource(ModelResource):
         else:
             gene_result_limit = GENE_RESULT_LIMIT
 
-        search_string = request.GET.get('query')
-
-        organism_uri = request.GET.get('organism')
         organism = None
         if organism_uri:
             organism = OrganismResource().get_via_uri(organism_uri,
