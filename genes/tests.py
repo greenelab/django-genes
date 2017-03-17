@@ -6,6 +6,7 @@ from django.core.management import call_command
 from fixtureless import Factory
 
 from haystack.query import SearchQuerySet
+from tastypie.test import ResourceTestCaseMixin
 
 from organisms.models import Organism
 from genes.models import Gene, CrossRef, CrossRefDB
@@ -412,6 +413,58 @@ class BuildingGeneIndexTestCase(TestCase):
         sqs = SearchQuerySet().models(Gene)
         sqs = sqs.filter(content=gene.systematic_name).load_all()
         self.assertEqual(sqs[0].object, gene)
+
+
+# We use @override_settings here so that the tests use the TEST_INDEX
+# when building/rebuilding the search indexes, and not our real Database
+# search indexes.
+@override_settings(HAYSTACK_CONNECTIONS=TEST_INDEX)
+class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
+    """
+    This TestCase tests gene search withrough the REST API
+    """
+
+    def setUp(self):
+        # This line is important to set up the test case!
+        super(GeneSearchTestCase, self).setUp()
+
+        self.gene1 = factory.create(Gene, {'standard_name': 'A1',
+                                           'systematic_name': 'a12'})
+        self.gene2 = factory.create(Gene, {'standard_name': None,
+                                           'systematic_name': 'b34'})
+        call_command('rebuild_index', interactive=False, verbosity=0)
+
+    def test_gene_get_search(self):
+        """
+        """
+        response = self.client.get('/api/v1/gene/search/',
+                                   data={'query': self.gene1.standard_name})
+
+        self.assertValidJSONResponse(response)
+
+        found_results = self.deserialize(response)[0]['found']
+        best_gene_result = found_results[0]
+
+        self.assertEqual(best_gene_result['standard_name'],
+                         self.gene1.standard_name)
+        self.assertEqual(best_gene_result['systematic_name'],
+                         self.gene1.systematic_name)
+
+    def test_gene_post_search(self):
+        """
+        """
+        response = self.client.post('/api/v1/gene/search/',
+                                    data={'query': self.gene2.standard_name})
+
+        self.assertValidJSONResponse(response)
+
+        found_results = self.deserialize(response)[0]['found']
+        best_gene_result = found_results[0]
+
+        self.assertEqual(best_gene_result['standard_name'],
+                         self.gene2.standard_name)
+        self.assertEqual(best_gene_result['systematic_name'],
+                         self.gene2.systematic_name)
 
 
 class CrossRefDBTestCase(TestCase):
