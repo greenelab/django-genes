@@ -340,6 +340,16 @@ class BuildingGeneIndexTestCase(TestCase):
     This TestCase tests the ability to build search indexes under certain
     corner cases.
     """
+
+    def setUp(self):
+        # As per this documented issue in Haystack,
+        # https://github.com/django-haystack/django-haystack/issues/704
+        # we need to call 'rebuild_index' at the beginning to get
+        # consistency of data and structure. Otherwise, the
+        # 'test_std_and_sys_name_present' *sometimes* yielded a None
+        # result
+        call_command('rebuild_index', interactive=False, verbosity=0)
+
     def test_factory_gene_creation(self):
         """
         Create a gene using the factory, without any specified fields.
