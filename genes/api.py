@@ -1,3 +1,5 @@
+import json
+
 from django.conf.urls import url
 from haystack.query import SearchQuerySet
 
@@ -61,9 +63,11 @@ class GeneResource(ModelResource):
             organism_uri = request.GET.get('organism')
 
         elif request.method == 'POST':
-            gene_result_limit = request.POST.get('gene_result_limit')
-            search_string = request.POST.get('query')
-            organism_uri = request.POST.get('organism')
+            post_dict = json.loads(request.body)
+
+            gene_result_limit = post_dict.get('gene_result_limit')
+            search_string = post_dict.get('query')
+            organism_uri = post_dict.get('organism')
 
         if gene_result_limit:
             try:
