@@ -421,7 +421,7 @@ class BuildingGeneIndexTestCase(TestCase):
 @override_settings(HAYSTACK_CONNECTIONS=TEST_INDEX)
 class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
     """
-    This TestCase tests gene search withrough the REST API
+    This TestCase tests gene search through the REST API
     """
 
     def setUp(self):
