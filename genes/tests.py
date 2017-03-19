@@ -438,8 +438,10 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
         """
         Tests API gene search when searching with a GET request
         """
-        response = self.client.get('/api/v1/gene/search/',
-                                   data={'query': self.gene1.standard_name})
+        response = self.api_client.get(
+            '/api/v1/gene/search/', format='json',
+            data={'query': self.gene1.standard_name}
+        )
 
         self.assertValidJSONResponse(response)
 
@@ -455,8 +457,10 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
         """
         Tests API gene search when searching with a POST request
         """
-        response = self.client.post('/api/v1/gene/search/',
-                                    data={'query': self.gene2.standard_name})
+        response = self.api_client.post(
+            '/api/v1/gene/search/', format='json',
+            data={'query': self.gene2.systematic_name}
+        )
 
         self.assertValidJSONResponse(response)
 
