@@ -58,16 +58,14 @@ class GeneResource(ModelResource):
         self.throttle_check(request)
 
         if request.method == 'GET':
-            gene_result_limit = request.GET.get('gene_result_limit')
-            search_string = request.GET.get('query')
-            organism_uri = request.GET.get('organism')
+            data_dict = request.GET
 
         elif request.method == 'POST':
-            post_dict = json.loads(request.body)
+            data_dict = json.loads(request.body)
 
-            gene_result_limit = post_dict.get('gene_result_limit')
-            search_string = post_dict.get('query')
-            organism_uri = post_dict.get('organism')
+        gene_result_limit = data_dict.get('gene_result_limit')
+        search_string = data_dict.get('query')
+        organism_uri = data_dict.get('organism')
 
         if gene_result_limit:
             try:
