@@ -1,3 +1,6 @@
+import inspect
+
+from django.conf import settings
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.core.exceptions import FieldError
@@ -6,6 +9,7 @@ from django.core.management import call_command
 from fixtureless import Factory
 
 from haystack.query import SearchQuerySet
+from tastypie.api import Api
 from tastypie.test import ResourceTestCaseMixin
 
 from organisms.models import Organism
@@ -26,6 +30,8 @@ TEST_INDEX = {
         'INDEX_NAME': 'test_index',
     },
 }
+
+ROOT_URLCONF = getattr(settings, 'ROOT_URLCONF', None)
 
 
 class GeneDBConstraintsTestCase(TestCase):
@@ -438,8 +444,19 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
         """
         Tests API gene search when searching with a GET request
         """
+        if not ROOT_URLCONF:
+            pass
+
+        proj_urls = __import__(ROOT_URLCONF)
+        url_members = inspect.getmembers(proj_urls.urls)
+
+        api_name = None
+        for k, v in url_members:
+            if isinstance(v, Api):
+                api_name = v.api_name
+
         response = self.api_client.get(
-            '/api/v1/gene/search/', format='json',
+            '/api/{}/gene/search/'.format(api_name), format='json',
             data={'query': self.gene1.standard_name}
         )
 
@@ -457,8 +474,19 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
         """
         Tests API gene search when searching with a POST request
         """
+        if not ROOT_URLCONF:
+            pass
+
+        proj_urls = __import__(ROOT_URLCONF)
+        url_members = inspect.getmembers(proj_urls.urls)
+
+        api_name = None
+        for k, v in url_members:
+            if isinstance(v, Api):
+                api_name = v.api_name
+
         response = self.api_client.post(
-            '/api/v1/gene/search/', format='json',
+            '/api/{}/gene/search/'.format(api_name), format='json',
             data={'query': self.gene2.systematic_name}
         )
 
