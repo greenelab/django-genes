@@ -456,7 +456,7 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
                 api_name = v.api_name
 
         response = self.api_client.get(
-            '/api/{}/gene/search/'.format(api_name), format='json',
+            '/api/{}/gene/search/'.format(api_name),
             data={'query': self.gene1.standard_name}
         )
 
@@ -486,7 +486,7 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
                 api_name = v.api_name
 
         response = self.api_client.post(
-            '/api/{}/gene/search/'.format(api_name), format='json',
+            '/api/{}/gene/search/'.format(api_name),
             data={'query': self.gene2.systematic_name}
         )
 
