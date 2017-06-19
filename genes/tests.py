@@ -425,24 +425,16 @@ class BuildingGeneIndexTestCase(TestCase):
 # when building/rebuilding the search indexes, and not our real Database
 # search indexes.
 @override_settings(HAYSTACK_CONNECTIONS=TEST_INDEX)
-class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
+class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
     """
-    This TestCase tests gene search through the REST API
+    Test API endpoints for retrieving and searching gene data, using both
+    GET and POST requests.
     """
 
-    def setUp(self):
-        # This line is important to set up the test case!
-        super(GeneSearchTestCase, self).setUp()
-
-        self.gene1 = factory.create(Gene, {'standard_name': 'A1',
-                                           'systematic_name': 'a12'})
-        self.gene2 = factory.create(Gene, {'standard_name': None,
-                                           'systematic_name': 'b34'})
-        call_command('rebuild_index', interactive=False, verbosity=0)
-
-    def test_gene_get_search(self):
+    def get_api_name(self):
         """
-        Tests API gene search when searching with a GET request
+        Utility function to get the name of the tastypie REST API in
+        whatever Django project is using django-genes.
         """
         if not ROOT_URLCONF:
             pass
@@ -454,7 +446,36 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
         for k, v in url_members:
             if isinstance(v, Api):
                 api_name = v.api_name
+        return api_name
 
+    def create_many_genes(self, organism, num_genes):
+        """
+        Helper function to generate a large number of genes
+        """
+
+        # Create genes:
+        for i in range(num_genes):
+            Gene.objects.create(entrezid=(i + 1),
+                                systematic_name="sys_name #" + str(i + 1),
+                                standard_name="std_name #" + str(i + 1),
+                                organism=organism)
+
+    def setUp(self):
+        # This line is important to set up the test case!
+        super(APIResourceTestCase, self).setUp()
+
+        self.gene1 = factory.create(Gene, {'standard_name': 'A1',
+                                           'systematic_name': 'a12'})
+        self.gene2 = factory.create(Gene, {'standard_name': None,
+                                           'systematic_name': 'b34'})
+        call_command('rebuild_index', interactive=False, verbosity=0)
+
+    def test_gene_get_search(self):
+        """
+        Tests API gene search when searching with a GET request
+        """
+
+        api_name = self.get_api_name()
         response = self.api_client.get(
             '/api/{}/gene/search/'.format(api_name),
             data={'query': self.gene1.standard_name}
@@ -474,16 +495,7 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
         """
         Tests API gene search when searching with a POST request
         """
-        if not ROOT_URLCONF:
-            pass
-
-        proj_urls = __import__(ROOT_URLCONF)
-        url_members = inspect.getmembers(proj_urls.urls)
-
-        api_name = None
-        for k, v in url_members:
-            if isinstance(v, Api):
-                api_name = v.api_name
+        api_name = self.get_api_name()
 
         response = self.api_client.post(
             '/api/{}/gene/search/'.format(api_name),
@@ -499,6 +511,28 @@ class GeneSearchTestCase(ResourceTestCaseMixin, TestCase):
                          self.gene2.standard_name)
         self.assertEqual(best_gene_result['systematic_name'],
                          self.gene2.systematic_name)
+
+    def test_gene_list_endpt_large_post(self):
+        """
+        Test that we can do a big POST request to get information back
+        for a lot of genes (more than are allowed through the ~4k
+        character limit for GET).
+        """
+        organism = factory.create(Organism)
+        gene_num = 4000
+
+        self.create_many_genes(organism, gene_num)
+        gene_ids = ",".join([str(g.id) for g in Gene.objects.filter(organism=organism)])
+
+        api_name = self.get_api_name()
+        resp = self.api_client.post('/api/{}/gene/'.format(api_name),
+                                    data={'pk__in': gene_ids})
+
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(
+            self.deserialize(resp)['meta']['total_count'],
+            gene_num
+        )
 
 
 class CrossRefDBTestCase(TestCase):
