@@ -437,7 +437,7 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         whatever Django project is using django-genes.
         """
         if not ROOT_URLCONF:
-            pass
+            return None
 
         proj_urls = __import__(ROOT_URLCONF)
         url_members = inspect.getmembers(proj_urls.urls)
@@ -452,7 +452,6 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         """
         Helper function to generate a large number of genes
         """
-
         # Create genes:
         for i in range(num_genes):
             Gene.objects.create(entrezid=(i + 1),
@@ -519,14 +518,15 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         character limit for GET).
         """
         organism = factory.create(Organism)
-        gene_num = 4000
+        gene_num = 1100
 
         self.create_many_genes(organism, gene_num)
-        gene_ids = ",".join([str(g.id) for g in Gene.objects.filter(organism=organism)])
+        gene_ids = ",".join([str(g.id) for g
+                             in Gene.objects.filter(organism=organism)])
 
         api_name = self.get_api_name()
-        resp = self.api_client.post('/api/{}/gene/'.format(api_name),
-                                    data={'pk__in': gene_ids})
+        resp = self.client.post('/api/{}/gene/'.format(api_name),
+                                data={'pk__in': gene_ids})
 
         self.assertValidJSONResponse(resp)
         self.assertEqual(
