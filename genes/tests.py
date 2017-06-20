@@ -516,6 +516,20 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         Test that we can do a big POST request to get information back
         for a lot of genes (more than are allowed through the ~4k
         character limit for GET).
+
+        We will set the gene_num to 1100 because
+
+        9 * 1 = 9 chars of single-digit IDs (1-9)
+        90 * 2 = 180 chars of double-digit IDs (10-99)
+        900 * 3 = 2700 chars of triple-digit IDs (100-999)
+        101 * 4 = 404 chars of four-digit IDs (1000-1100)
+        (1100 - 1) * 1 chars of delimiters (',')
+
+        TOTAL = 9 + 180 + 2700 + 404 + 1099 = 4392 chars.
+
+        This is based on the
+        APIResourceTestCase.test_expressionvalue_big_post() test in
+        https://github.com/greenelab/adage-server/blob/master/adage/analyze/tests.py
         """
         organism = factory.create(Organism)
         gene_num = 1100
