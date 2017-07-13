@@ -130,7 +130,12 @@ class GeneResource(ModelResource):
                 # or can be coerced into one.
                 limit = int(limit)
             except ValueError:
-                limit = None
+                # Keep the gene_result_limit at whatever the
+                # GENE_RESULT_LIMIT setting is set to at
+                # the top of the file
+                limit = GENE_RESULT_LIMIT
+        else:
+            limit = GENE_RESULT_LIMIT
 
         # We want to sort results by three fields: First by search score,
         # then by name length (standard_name if present, if not then
