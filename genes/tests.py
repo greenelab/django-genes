@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.core.management import call_command
 from fixtureless import Factory
 
+import haystack
 from haystack.query import SearchQuerySet
 from tastypie.api import Api
 from tastypie.test import ResourceTestCaseMixin
@@ -16,6 +17,7 @@ from organisms.models import Organism
 from genes.models import Gene, CrossRef, CrossRefDB
 from genes.utils import translate_genes
 from genes.search_indexes import GeneIndex
+from genes.app_settings import GENE_RESULT_LIMIT
 
 factory = Factory()
 
@@ -349,6 +351,8 @@ class BuildingGeneIndexTestCase(TestCase):
     """
 
     def setUp(self):
+        haystack.connections.reload('default')
+
         # As per this documented issue in Haystack,
         # https://github.com/django-haystack/django-haystack/issues/704
         # we need to call 'rebuild_index' at the beginning to get
@@ -420,6 +424,9 @@ class BuildingGeneIndexTestCase(TestCase):
         sqs = sqs.filter(content=gene.systematic_name).load_all()
         self.assertEqual(sqs[0].object, gene)
 
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
+
 
 # We use @override_settings here so that the tests use the TEST_INDEX
 # when building/rebuilding the search indexes, and not our real Database
@@ -460,6 +467,8 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
                                 organism=organism)
 
     def setUp(self):
+        haystack.connections.reload('default')
+
         # This line is important to set up the test case!
         super(APIResourceTestCase, self).setUp()
 
@@ -467,6 +476,28 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
                                            'systematic_name': 'a12'})
         self.gene2 = factory.create(Gene, {'standard_name': None,
                                            'systematic_name': 'b34'})
+
+        factory.create(Gene, {'standard_name': 'ans'})
+        factory.create(Gene, {'standard_name': 'ansA'})
+        factory.create(Gene, {'standard_name': 'ansB'})
+        factory.create(Gene, {'standard_name': 'ansC'})
+        factory.create(Gene, {'standard_name': 'ansD'})
+        factory.create(Gene, {'standard_name': 'ansE'})
+        factory.create(Gene, {'standard_name': 'ansF'})
+        factory.create(Gene, {'standard_name': 'ansG'})
+        factory.create(Gene, {'standard_name': 'ansH'})
+        factory.create(Gene, {'standard_name': 'ansI'})
+        factory.create(Gene, {'standard_name': 'ansJ'})
+        factory.create(Gene, {'standard_name': 'ansK'})
+        factory.create(Gene, {'standard_name': 'ansL'})
+        factory.create(Gene, {'standard_name': 'ansM'})
+        factory.create(Gene, {'standard_name': 'ansN'})
+        factory.create(Gene, {'standard_name': 'ansO'})
+        factory.create(Gene, {'standard_name': 'ansP'})
+        factory.create(Gene, {'standard_name': 'ansQ'})
+        factory.create(Gene, {'standard_name': 'ansR'})
+        factory.create(Gene, {'standard_name': 'ansS'})
+
         call_command('rebuild_index', interactive=False, verbosity=0)
 
     def test_gene_get_search(self):
@@ -547,6 +578,27 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
             self.deserialize(resp)['meta']['total_count'],
             gene_num
         )
+
+    def test_gene_autocomplete_search(self):
+        """
+        Tests API gene autocomplete search. In the setUp method, we
+        created 20 genes that start with 'ans', but this should only
+        return 15 results, or however many were set in the GENE_RESULT_LIMIT
+        setting.
+        """
+
+        api_name = self.get_api_name()
+
+        response = self.api_client.get(
+            '/api/{}/gene/autocomplete/'.format(api_name),
+            data={'query': 'ans'}
+        )
+        self.assertValidJSONResponse(response)
+        found_results = self.deserialize(response)['results']
+        self.assertEqual(len(found_results), GENE_RESULT_LIMIT)
+
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
 
 
 class CrossRefDBTestCase(TestCase):
