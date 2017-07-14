@@ -5,7 +5,7 @@ from haystack.query import SearchQuerySet
 
 from genes.models import Gene, CrossRefDB, CrossRef
 from genes.utils import translate_genes
-from genes.app_settings import GENE_RESULT_LIMIT
+from genes.app_settings import GENES_API_RESULT_LIMIT
 from organisms.api import OrganismResource
 
 # Import and set logger
@@ -74,13 +74,14 @@ class GeneResource(ModelResource):
                 # or can be coerced into one.
                 gene_result_limit = int(gene_result_limit)
             except ValueError:
-                # Keep the gene_result_limit at whatever the
-                # GENE_RESULT_LIMIT setting is set to at
-                # the top of the file
-                gene_result_limit = GENE_RESULT_LIMIT
+                logger.error("'gene_result_limit' parameter passed was "
+                             "specified incorrectly.")
+                # Limit was specified incorrectly, so default to
+                # GENES_API_RESULT_LIMIT setting.
+                gene_result_limit = GENES_API_RESULT_LIMIT
 
         else:
-            gene_result_limit = GENE_RESULT_LIMIT
+            gene_result_limit = GENES_API_RESULT_LIMIT
 
         organism = None
         if organism_uri:
@@ -129,12 +130,13 @@ class GeneResource(ModelResource):
                 # or can be coerced into one.
                 limit = int(limit)
             except ValueError:
-                # Keep the gene_result_limit at whatever the
-                # GENE_RESULT_LIMIT setting is set to at
-                # the top of the file
-                limit = GENE_RESULT_LIMIT
+                logger.error("'limit' parameter passed was specified "
+                             "incorrectly.")
+                # Limit was specified incorrectly, so default to
+                # GENES_API_RESULT_LIMIT setting.
+                limit = GENES_API_RESULT_LIMIT
         else:
-            limit = GENE_RESULT_LIMIT
+            limit = GENES_API_RESULT_LIMIT
 
         # We want to sort results by three fields: First by search score,
         # then by name length (standard_name if present, if not then

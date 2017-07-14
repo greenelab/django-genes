@@ -1,7 +1,6 @@
 try:
     from django.conf import settings
-
 except ImportError:
     settings = {}
 
-GENE_RESULT_LIMIT = getattr(settings, 'GENE_RESULT_LIMIT', 15)
+GENES_API_RESULT_LIMIT = getattr(settings, 'GENES_API_RESULT_LIMIT', 15)
