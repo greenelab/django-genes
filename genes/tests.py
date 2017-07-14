@@ -1,4 +1,5 @@
 import inspect
+import string
 
 from django.conf import settings
 from django.test import TestCase
@@ -477,26 +478,13 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         self.gene2 = factory.create(Gene, {'standard_name': None,
                                            'systematic_name': 'b34'})
 
-        factory.create(Gene, {'standard_name': 'ans'})
-        factory.create(Gene, {'standard_name': 'ansA'})
-        factory.create(Gene, {'standard_name': 'ansB'})
-        factory.create(Gene, {'standard_name': 'ansC'})
-        factory.create(Gene, {'standard_name': 'ansD'})
-        factory.create(Gene, {'standard_name': 'ansE'})
-        factory.create(Gene, {'standard_name': 'ansF'})
-        factory.create(Gene, {'standard_name': 'ansG'})
-        factory.create(Gene, {'standard_name': 'ansH'})
-        factory.create(Gene, {'standard_name': 'ansI'})
-        factory.create(Gene, {'standard_name': 'ansJ'})
-        factory.create(Gene, {'standard_name': 'ansK'})
-        factory.create(Gene, {'standard_name': 'ansL'})
-        factory.create(Gene, {'standard_name': 'ansM'})
-        factory.create(Gene, {'standard_name': 'ansN'})
-        factory.create(Gene, {'standard_name': 'ansO'})
-        factory.create(Gene, {'standard_name': 'ansP'})
-        factory.create(Gene, {'standard_name': 'ansQ'})
-        factory.create(Gene, {'standard_name': 'ansR'})
-        factory.create(Gene, {'standard_name': 'ansS'})
+        standard_name = 'ans'
+        factory.create(Gene, {'standard_name': standard_name})
+
+        # Create 26 more gene names that start with 'ans' and then have
+        # an uppercase letter appended to it.
+        for letter in string.ascii_uppercase:
+            factory.create(Gene, {'standard_name': standard_name + letter})
 
         call_command('rebuild_index', interactive=False, verbosity=0)
 
@@ -582,7 +570,7 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
     def test_gene_autocomplete_search(self):
         """
         Tests API gene autocomplete search. In the setUp method, we
-        created 20 genes that start with 'ans', but this should only
+        created 27 genes that start with 'ans', but this should only
         return 15 results, or however many were set in the
         GENES_API_RESULT_LIMIT setting.
         """
