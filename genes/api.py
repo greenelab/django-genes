@@ -5,6 +5,7 @@ from haystack.query import SearchQuerySet
 
 from genes.models import Gene, CrossRefDB, CrossRef
 from genes.utils import translate_genes
+from genes.app_settings import GENE_RESULT_LIMIT
 from organisms.api import OrganismResource
 
 # Import and set logger
@@ -21,8 +22,6 @@ try:
 except ImportError:
     logger.info('Not using django-tastypie in genes/api.py file')
     quit()
-
-GENE_RESULT_LIMIT = 15
 
 
 class GeneResource(ModelResource):
