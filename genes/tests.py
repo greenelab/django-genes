@@ -17,7 +17,7 @@ from organisms.models import Organism
 from genes.models import Gene, CrossRef, CrossRefDB
 from genes.utils import translate_genes
 from genes.search_indexes import GeneIndex
-from genes.app_settings import GENE_RESULT_LIMIT
+from genes.app_settings import GENES_API_RESULT_LIMIT
 
 factory = Factory()
 
@@ -583,8 +583,8 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         """
         Tests API gene autocomplete search. In the setUp method, we
         created 20 genes that start with 'ans', but this should only
-        return 15 results, or however many were set in the GENE_RESULT_LIMIT
-        setting.
+        return 15 results, or however many were set in the
+        GENES_API_RESULT_LIMIT setting.
         """
 
         api_name = self.get_api_name()
@@ -595,7 +595,7 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         )
         self.assertValidJSONResponse(response)
         found_results = self.deserialize(response)['results']
-        self.assertEqual(len(found_results), GENE_RESULT_LIMIT)
+        self.assertEqual(len(found_results), GENES_API_RESULT_LIMIT)
 
     def tearDown(self):
         call_command('clear_index', interactive=False, verbosity=0)
