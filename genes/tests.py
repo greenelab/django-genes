@@ -478,13 +478,16 @@ class APIResourceTestCase(ResourceTestCaseMixin, TestCase):
         self.gene2 = factory.create(Gene, {'standard_name': None,
                                            'systematic_name': 'b34'})
 
-        standard_name = 'ans'
-        factory.create(Gene, {'standard_name': standard_name})
+        standard_name_prefix = 'ans'
+        factory.create(Gene, {'standard_name': standard_name_prefix})
 
         # Create 26 more gene names that start with 'ans' and then have
         # an uppercase letter appended to it.
         for letter in string.ascii_uppercase:
-            factory.create(Gene, {'standard_name': standard_name + letter})
+            factory.create(
+                Gene,
+                {'standard_name': standard_name_prefix + letter}
+            )
 
         call_command('rebuild_index', interactive=False, verbosity=0)
 
