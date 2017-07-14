@@ -64,24 +64,24 @@ class GeneResource(ModelResource):
         elif request.method == 'POST':
             data_dict = json.loads(request.body)
 
-        gene_result_limit = data_dict.get('gene_result_limit')
+        limit = data_dict.get('limit')
         search_string = data_dict.get('query')
         organism_uri = data_dict.get('organism')
 
-        if gene_result_limit:
+        if limit:
             try:
                 # Make sure the input is already an integer
                 # or can be coerced into one.
-                gene_result_limit = int(gene_result_limit)
+                limit = int(limit)
             except ValueError:
-                logger.error("'gene_result_limit' parameter passed was "
-                             "specified incorrectly.")
+                logger.error("'limit' parameter passed was specified "
+                             "incorrectly.")
                 # Limit was specified incorrectly, so default to
                 # GENES_API_RESULT_LIMIT setting.
-                gene_result_limit = GENES_API_RESULT_LIMIT
+                limit = GENES_API_RESULT_LIMIT
 
         else:
-            gene_result_limit = GENES_API_RESULT_LIMIT
+            limit = GENES_API_RESULT_LIMIT
 
         organism = None
         if organism_uri:
@@ -101,7 +101,7 @@ class GeneResource(ModelResource):
             if organism is not None:
                 sqs = sqs.filter(organism=organism)
             sqs = sqs.filter(content=search)
-            sqs = sqs.load_all()[:gene_result_limit]
+            sqs = sqs.load_all()[:limit]
             objects = []
 
             for result in sqs:
