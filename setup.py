@@ -9,18 +9,18 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-genes',
-    version='0.14',
+    version='0.15',
     packages=find_packages(),
     include_package_data=True,
     license='LICENSE.txt',
     description='A simple Django app to represent genes.',
     long_description=README,
-    url='https://bitbucket.org/greenelab/django-genes',
+    url='https://github.com/greenelab/django-genes',
     author='Greene Lab',
     author_email='team@greenelab.com',
     install_requires=[
         'django>=1.8',
-        'django-organisms>=0.4',
+        'django-organisms>=0.5',
         'django-haystack',
         'django-fixtureless',
     ],
