@@ -144,6 +144,7 @@ class Command(BaseCommand):
             for line in geneinfo_fh:
                 toks = line.strip().split('\t')
                 if toks[symb_col] == "NEWENTRY":
+                    logger.info("NEWENTRY line skipped")
                     continue;
 
                 if not (toks[0] == gi_tax_id):  # From wrong organism, skip.
