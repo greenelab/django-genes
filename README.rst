@@ -182,7 +182,7 @@ sub-directory:
       gunzip -c data/Homo_sapiens.gene_info.gz > data/Homo_sapiens.gene_info
 
       # Call genes_load_geneinfo to populate the database:
-      python manage.py genes_load_geneinfo --geneinfo_file=data/Homo_sapiens.gene_info --taxonomy_id=9606 --systematic_col=2 --symbol_col=2
+      python manage.py genes_load_geneinfo --geneinfo_file=data/Homo_sapiens.gene_info --taxonomy_id=9606 --systematic_col=3 --symbol_col=2
 
 
 3. genes_load_uniprot.py
