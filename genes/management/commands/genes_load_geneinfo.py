@@ -46,7 +46,7 @@ ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
       # Call genes_load_geneinfo to populate the database:
       python manage.py genes_load_geneinfo \
 --geneinfo_file=data/Homo_sapiens.gene_info \
---taxonomy_id=9606 --systematic_col=2 --symbol_col=2
+--taxonomy_id=9606 --systematic_col=3 --symbol_col=2
 """
 
 import logging
@@ -143,6 +143,10 @@ class Command(BaseCommand):
             entrez_created = 0  # Didn't exist, added.
             for line in geneinfo_fh:
                 toks = line.strip().split('\t')
+                if toks[symb_col] == "NEWENTRY":
+                    logger.info("NEWENTRY line skipped")
+                    continue;
+
                 if not (toks[0] == gi_tax_id):  # From wrong organism, skip.
                     continue
 
