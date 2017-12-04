@@ -227,7 +227,7 @@ class CrossRefDBResource(ModelResource):
 
 class CrossRefResource(ModelResource):
     xrid = fields.CharField(attribute='xrid')
-    crossrefdb = fields.ToOneField(CrossRefDBResource, 'crossrefdb')
+    crossrefdb = fields.ToOneField(CrossRefDBResource, 'crossrefdb', full=True)
     gene = fields.ToOneField(GeneResource, 'gene')
     db_url = fields.CharField(attribute='specific_url')
 
