@@ -221,9 +221,6 @@ sub-directory:
 
    * (Required) wb_url: URL of wormbase xrefs file;
 
-   * (Required) taxonomy_id: taxonomy ID assigned to this organism by
-     NCBI;
-
    * (Optional) db_name: the name of the cross-reference database,
      default is 'WormBase'.
 
@@ -236,7 +233,7 @@ sub-directory:
 
       # Find latest version of WormBase here:
       # http://www.wormbase.org/about/release_schedule#102--10-1
-      python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
+      python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz
 
 
 5. genes_load_gene_history.py
