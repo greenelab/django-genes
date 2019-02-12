@@ -147,14 +147,14 @@ sub-directory:
    * (Required) taxonomy_id: taxonomy ID for organism for which genes
      are being populated;
 
-   * (Optional) systematic_col: systematic column in gene info file.
-     Default is 3;
+   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
+     (such as S. cerevisiae);
 
    * (Optional) symbol_col: symbol column in gene info file. Default
      is 2;
 
-   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
-     (such as S. cerevisiae);
+   * (Optional) systematic_col: systematic column in gene info file.
+     Default is 3;
 
    * (Optional) alias_col: the column containing gene aliases. If a
      hyphen '-' or blank space ' ' is passed, symbol_col will be used.
