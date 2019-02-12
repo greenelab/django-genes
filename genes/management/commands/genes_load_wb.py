@@ -7,9 +7,6 @@
 
    * (Required) wb_url: URL of wormbase xrefs file;
 
-   * (Required) taxonomy_id: taxonomy ID assigned to this organism by
-     NCBI;
-
    * (Optional) db_name: the name of the cross-reference database,
      default is 'WormBase'.
 
@@ -23,8 +20,7 @@
       # Find latest version of WormBase here:
       # http://www.wormbase.org/about/release_schedule#102--10-1
       python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/\
-wormbase/releases/WS243/species/c_elegans/PRJNA13758/\
-c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
+wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz
 """
 
 import logging
@@ -47,13 +43,6 @@ class Command(BaseCommand):
             dest='wburl',
             required=True,
             help="URL of wormbase xrefs file."
-        )
-        parser.add_argument(
-            '--taxonomy_id',
-            dest='taxonomy_id',
-            type=int,
-            required=True,
-            help="taxonomy_id assigned by NCBI to this organism"
         )
         parser.add_argument(
             '--db_name',
