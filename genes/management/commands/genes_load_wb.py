@@ -30,10 +30,8 @@ c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
 import logging
 import urllib2
 import gzip
-from optparse import make_option
 from StringIO import StringIO
-
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from genes.models import Gene, CrossRefDB, CrossRef
 
 logger = logging.getLogger(__name__)
@@ -41,17 +39,28 @@ logger.addHandler(logging.NullHandler())
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--wb_url', action='store', dest='wburl',
-                    help="URL of wormbase xrefs file."),
-        make_option('--db_name', action='store', dest='dbname',
-                    help="Name of the database- defaults to 'WormBase'.",
-                    default="WormBase"),
-        make_option('--taxonomy_id', action='store', dest='taxonomy_id',
-                    help="taxonomy_id assigned by NCBI to this organism"),
-    )
-
     help = 'Add wormbase identifiers to database.'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--wb_url',
+            dest='wburl',
+            required=True,
+            help="URL of wormbase xrefs file."
+        )
+        parser.add_argument(
+            '--taxonomy_id',
+            dest='taxonomy_id',
+            type=int,
+            required=True,
+            help="taxonomy_id assigned by NCBI to this organism"
+        )
+        parser.add_argument(
+            '--db_name',
+            dest='dbname',
+            default="WormBase",
+            help="Name of the database, defaults to 'WormBase'."
+        )
 
     def handle(self, *args, **options):
         database = CrossRefDB.objects.get(name=options.get('dbname'))

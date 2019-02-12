@@ -28,8 +28,6 @@ current_release/knowledgebase/idmapping/idmapping.dat.gz
 
 import logging
 import sys
-from optparse import make_option
-
 from django.core.management.base import BaseCommand
 from genes.models import CrossRefDB, CrossRef, Gene
 
@@ -38,28 +36,31 @@ logger.addHandler(logging.NullHandler())
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--uniprot_file', action='store', dest='uniprot',
-                    help='Filtered uniprot file (i.e. with: zgrep -e "GeneID"'
-                         ' -e "Ensembl" idmapping.dat.gz > '
-                         'uniprot_entrez_ensembl.txt'),
-    )
     help = ('Add UniProtKB cross references. *Note - Ensembl Cross-reference'
             ' database must be loaded in Tribe before running this command, '
             'as it will look for Ensembl IDs if it finds no Entrez mappings.')
 
-    def handle(self, *args, **options):
-        uniprot_file = options.get('uniprot')
-        if uniprot_file:
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--uniprot_file',
+            dest='uniprot',
+            required=True,
+            help=('Filtered uniprot file (i.e. with: zgrep -e "GeneID" -e '
+                  '"Ensembl" idmapping.dat.gz > uniprot_entrez_ensembl.txt)')
+        )
 
+    def handle(self, *args, **options):
+        uniprot_file = options.get('uniprot').strip()
+        if uniprot_file:
             uniprot = CrossRefDB.objects.get(name='UniProtKB')
             ensembl = CrossRefDB.objects.get(name='Ensembl')
 
-            entrez_set = set(Gene.objects.all().values_list('entrezid',
-                                                            flat=True))
+            entrez_set = set(Gene.objects.all().values_list(
+                'entrezid', flat=True)
+            )
             ensembl_set = set(CrossRef.objects.filter(
-                                crossrefdb=ensembl).values_list('xrid',
-                                                                flat=True))
+                crossrefdb=ensembl).values_list('xrid', flat=True)
+            )
             uniprot_file = open(uniprot_file)
             uniprot_entrez = {}
             uniprot_ensembl = {}
