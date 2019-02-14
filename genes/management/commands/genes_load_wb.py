@@ -7,9 +7,6 @@
 
    * (Required) wb_url: URL of wormbase xrefs file;
 
-   * (Required) taxonomy_id: taxonomy ID assigned to this organism by
-     NCBI;
-
    * (Optional) db_name: the name of the cross-reference database,
      default is 'WormBase'.
 
@@ -23,17 +20,14 @@
       # Find latest version of WormBase here:
       # http://www.wormbase.org/about/release_schedule#102--10-1
       python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/\
-wormbase/releases/WS243/species/c_elegans/PRJNA13758/\
-c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
+wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz
 """
 
 import logging
 import urllib2
 import gzip
-from optparse import make_option
 from StringIO import StringIO
-
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from genes.models import Gene, CrossRefDB, CrossRef
 
 logger = logging.getLogger(__name__)
@@ -41,17 +35,21 @@ logger.addHandler(logging.NullHandler())
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--wb_url', action='store', dest='wburl',
-                    help="URL of wormbase xrefs file."),
-        make_option('--db_name', action='store', dest='dbname',
-                    help="Name of the database- defaults to 'WormBase'.",
-                    default="WormBase"),
-        make_option('--taxonomy_id', action='store', dest='taxonomy_id',
-                    help="taxonomy_id assigned by NCBI to this organism"),
-    )
-
     help = 'Add wormbase identifiers to database.'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--wb_url',
+            dest='wburl',
+            required=True,
+            help="URL of wormbase xrefs file."
+        )
+        parser.add_argument(
+            '--db_name',
+            dest='dbname',
+            default="WormBase",
+            help="Name of the database, defaults to 'WormBase'."
+        )
 
     def handle(self, *args, **options):
         database = CrossRefDB.objects.get(name=options.get('dbname'))

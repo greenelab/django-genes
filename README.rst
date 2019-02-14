@@ -147,14 +147,14 @@ sub-directory:
    * (Required) taxonomy_id: taxonomy ID for organism for which genes
      are being populated;
 
-   * (Optional) systematic_col: systematic column in gene info file.
-     Default is 3;
+   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
+     (such as S. cerevisiae);
 
    * (Optional) symbol_col: symbol column in gene info file. Default
      is 2;
 
-   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
-     (such as S. cerevisiae);
+   * (Optional) systematic_col: systematic column in gene info file.
+     Default is 3;
 
    * (Optional) alias_col: the column containing gene aliases. If a
      hyphen '-' or blank space ' ' is passed, symbol_col will be used.
@@ -221,9 +221,6 @@ sub-directory:
 
    * (Required) wb_url: URL of wormbase xrefs file;
 
-   * (Required) taxonomy_id: taxonomy ID assigned to this organism by
-     NCBI;
-
    * (Optional) db_name: the name of the cross-reference database,
      default is 'WormBase'.
 
@@ -236,7 +233,7 @@ sub-directory:
 
       # Find latest version of WormBase here:
       # http://www.wormbase.org/about/release_schedule#102--10-1
-      python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz --taxonomy_id=6239
+      python manage.py genes_load_wb --wb_url=ftp://ftp.wormbase.org/pub/wormbase/releases/WS243/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS243.xrefs.txt.gz
 
 
 5. genes_load_gene_history.py

@@ -11,13 +11,13 @@
    * (Required) taxonomy_id: taxonomy ID for organism for which genes are
      being populated;
 
-   * (Optional) systematic_col: systematic column in gene info file.
-     Default is 3;
+   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
+     (such as S. cerevisiae);
 
    * (Optional) symbol_col: symbol column in gene info file. Default is 2;
 
-   * (Optional) gi_tax_id: alternative taxonomy ID for some organisms
-     (such as S. cerevisiae);
+   * (Optional) systematic_col: systematic column in gene info file.
+     Default is 3;
 
    * (Optional) alias_col: the column containing gene aliases. If a hyphen
      '-' or blank space ' ' is passed, symbol_col will be used. Default is 4.
@@ -51,8 +51,6 @@ ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
 
 import logging
 import sys
-from optparse import make_option
-
 from django.core.management.base import BaseCommand
 from genes.models import Gene, CrossRefDB, CrossRef
 from organisms.models import Organism
@@ -62,37 +60,60 @@ logger.addHandler(logging.NullHandler())
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--geneinfo_file', action='store', dest='geneinfo',
-                    help="gene_info file available for download from NCBI "
-                    "entrez"),
-        make_option('--taxonomy_id', action='store', dest='taxonomy_id',
-                    help="taxonomy_id assigned by NCBI to this organism"),
+    help = ('Add standards from stds_file with the associations from ' +
+            'assoc_file.')
 
-        make_option('--gi_tax_id', action='store', dest='gi_tax_id',
-                    help="To work with cerivisiae's tax id change, use this, "
-                    "otherwise we will just use tax_id"),
-
-        make_option('--symbol_col', action='store', dest='symbol_col',
-                    help="The column containing the symbol id.", default=2),
-
-        make_option('--systematic_col', action='store', dest='systematic_col',
-                    help="The column containing the systematic id.  If this is"
-                    " '-' or blank, the symbol will be used", default=3),
-
-        make_option('--alias_col', action='store', dest='alias_col',
-                    help="The column containing gene aliases.  If this is '-'"
-                    "or blank, the symbol will be used", default=4),
-
-        make_option('--put_systematic_in_xrdb', action='store',
-                    dest='systematic_xrdb',
-                    help='Optional: Name of Cross-Reference Database for '
-                    'which you want to use organism systematic IDs as '
-                    'CrossReference IDs (Used for Pseudomonas)'),
-    )
-
-    help = 'Add standards from stds_file with the associations from '\
-           'assoc_file.'
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--geneinfo_file',
+            dest='geneinfo',
+            required=True,
+            help="gene_info file available for download from NCBI entrez"
+        )
+        parser.add_argument(
+            '--taxonomy_id',
+            dest='taxonomy_id',
+            type=int,
+            required=True,
+            help="taxonomy_id assigned by NCBI to this organism"
+        )
+        parser.add_argument(
+            '--gi_tax_id',
+            dest='gi_tax_id',
+            help=("To work with cerivisiae's tax id change, use this, " +
+                  "otherwise we will just use tax_id")
+        )
+        parser.add_argument(
+            '--symbol_col',
+            dest='symbol_col',
+            type=int,
+            default=2,
+            help="The column containing the symbol id."
+        )
+        parser.add_argument(
+            '--systematic_col',
+            dest='systematic_col',
+            type=int,
+            default=3,
+            help=("The column containing the systematic id.  If this is " +
+                  "'-' or blank, the symbol will be used")
+        )
+        parser.add_argument(
+            '--alias_col',
+            dest='alias_col',
+            type=int,
+            default=4,
+            help=("The column containing gene aliases.  If this is '-' " +
+                  "or blank, the symbol will be used")
+        )
+        parser.add_argument(
+            '--put_systematic_in_xrdb',
+            dest='systematic_xrdb',
+            action='store_true',
+            help=("Optional: Name of Cross-Reference Database for which you " +
+                  "want to use organism systematic IDs as CrossReference " +
+                  "IDs (Used for Pseudomonas)")
+        )
 
     def handle(self, *args, **options):
         # Load the organism.
@@ -101,9 +122,9 @@ class Command(BaseCommand):
 
         # geneinfo file information.
         geneinfo_filename = options.get('geneinfo')
-        symb_col = int(options.get('symbol_col'))
-        syst_col = int(options.get('systematic_col'))
-        alias_col = int(options.get('alias_col'))
+        symb_col = options.get('symbol_col')
+        syst_col = options.get('systematic_col')
+        alias_col = options.get('alias_col')
         systematic_xrdb = options.get('systematic_xrdb')
 
         # Open the geneinfo file.
@@ -124,8 +145,8 @@ class Command(BaseCommand):
         # organism.
         xr_in_db = set()
         for x in CrossRef.objects.filter(
-                gene__entrezid__in=entrez_in_db).prefetch_related('crossrefdb',
-                                                                  'gene'):
+                gene__entrezid__in=entrez_in_db
+        ).prefetch_related('crossrefdb', 'gene'):
             xr_in_db.add((x.crossrefdb.name, x.xrid, x.gene.entrezid))
 
         if tax_id and geneinfo_fh:

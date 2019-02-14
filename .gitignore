@@ -1,2 +1,5 @@
 *~
 *.pyc
+dist/
+django_genes.egg-info/
+.doctrees/

@@ -29,9 +29,7 @@
 """
 
 import logging
-from optparse import make_option
-
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from genes.models import CrossRefDB
 
 logger = logging.getLogger(__name__)
@@ -39,22 +37,25 @@ logger.addHandler(logging.NullHandler())
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--name', action='store', dest='name'),
-        make_option('--URL', action='store', dest='url'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--name', dest='name', required=True)
+        parser.add_argument('--URL', dest='url', required=True)
 
-    help = 'Add a cross reference database if one with the provided name '\
-           'does not exist, or update the URL if it does.'
+    help = ('Add a cross reference database if one with the provided name '
+            'does not exist, or update the URL if it does.')
 
     def handle(self, *args, **options):
-        name = options.get('name', None)
-        url = options.get('url', None)
-        try:
-            xrdb = CrossRefDB.objects.get(name=name)
-            if xrdb.url != url:
-                xrdb.url = url
+        name = options.get('name').strip()
+        url = options.get('url').strip()
+        if name and url:
+            try:
+                xrdb = CrossRefDB.objects.get(name=name)
+                if xrdb.url != url:
+                    xrdb.url = url
+                    xrdb.save()
+            except CrossRefDB.DoesNotExist:
+                xrdb = CrossRefDB(name=name, url=url)
                 xrdb.save()
-        except CrossRefDB.DoesNotExist:
-            xrdb = CrossRefDB(name=name, url=url)
-            xrdb.save()
+        else:
+            raise CommandError("Failed to add or update xrdb record due to " +
+                               "invalid arguments")

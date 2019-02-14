@@ -27,11 +27,13 @@ generate the integrated README.rst:
 
 import sys
 import os
+import django
 
 sys.path.insert(0, os.path.abspath('.'))
 # Define DJANGO_SETTINGS_MODULE so that django management commands (see below)
 # can be imported.
 os.environ['DJANGO_SETTINGS_MODULE'] = 'django_settings'
+django.setup()
 
 # Import django managewment commands, whose docstrings will be requested by
 # sphinx/README.rst and eventually integrated into ../README.rst.
