@@ -63,15 +63,26 @@ class Command(BaseCommand):
             'records in the database.')
 
     def add_arguments(self, parser):
+        # Two required arguments
         parser.add_argument('gene_history_file', type=file)
         parser.add_argument('tax_id', type=str)
-        parser.add_argument('--tax_id_col', type=int, default=1,
+
+        # Three optional arguments
+        parser.add_argument('--tax_id_col',
+                            type=int,
+                            default=1,
                             dest='tax_id_col',
                             help='column number of tax_id')
-        parser.add_argument('--discontinued_id_col', type=int, default=3,
+
+        parser.add_argument('--discontinued_id_col',
+                            type=int,
+                            default=3,
                             dest='id_col',
                             help='column number of Discontinued_GeneID')
-        parser.add_argument('--discontinued_symbol_col', type=int, default=4,
+
+        parser.add_argument('--discontinued_symbol_col',
+                            type=int,
+                            default=4,
                             dest='symbol_col',
                             help='column number of Discontinued_Symbol')
 
